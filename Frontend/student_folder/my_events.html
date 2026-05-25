@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Events | AURIX</title>
+
+    <link rel="stylesheet" href="../CSS/style.css">
+    <script src="https://kit.fontawesome.com/64d58efce2.js"></script>
+</head>
+
+<body class="dashboard-page">
+
+<!-- 🔐 AUTH (FIXED POSITION) -->
+<script>
+const user = JSON.parse(localStorage.getItem("user"));
+
+if (!user) {
+    window.location.href = "../login.html";
+}
+</script>
+
+<!-- PARTICLES -->
+<div id="particles-js"></div>
+
+<!-- ================= TOPBAR ================= -->
+<div class="topbar">
+
+    <div class="nav-left">
+        <i class="fas fa-bars menu-icon" onclick="toggleSidebar()"></i>
+        <h2 class="logo">AURIX</h2>
+    </div>
+
+    <div class="menu">
+        <a href="student-dashboard.html" class="nav-btn" onclick="handleNav(event, this)">Home</a>
+        <a href="my_events.html" class="active">My Events</a>
+        <a href="club-page.html" class="nav-btn" onclick="handleNav(event, this)">Clubs</a>
+        <a href="announcements.html" class="nav-btn" onclick="handleNav(event, this)">Announcements</a>
+    </div>
+
+    <div>
+        <input class="search-bar" placeholder="Search...">
+        <i class="fas fa-user profile-icon" onclick="toggleSidebar()"></i>
+    </div>
+
+</div>
+
+<!-- ================= SIDEBAR ================= -->
+<div class="sidebar" id="sidebar">
+
+    <h3>AURIX</h3>
+
+    <a href="student-dashboard.html">🏠 Home</a>
+    <a href="#">👤 My Profile</a>
+    <a href="#">📞 Contact</a>
+
+    <h4 onclick="toggleBranch()">🏫 Branches ▼</h4>
+
+    <div id="branchMenu" class="dropdown hidden">
+        <p onclick="toggleClubs()">▶ BTech</p>
+
+        <div id="clubMenu" class="dropdown hidden">
+            <a href="club-profile.html">💻 Coding Club</a>
+            <a href="club-profile.html">🤖 AI Club</a>
+        </div>
+    </div>
+
+    <hr>
+
+    <a onclick="logout()">🚪 Logout</a>
+
+</div>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<!-- ================= MAIN ================= -->
+<div class="main-content">
+
+    <h2 class="section-title">🎟 My Registered Events</h2>
+
+    <div class="event-grid" id="myEvents"></div>
+
+</div>
+
+<!-- ================= FOOTER ================= -->
+<footer class="footer">
+
+    <div class="footer-container">
+
+        <div>
+            <h2>AURIX</h2>
+            <p>Smart College Event Platform</p>
+        </div>
+
+        <div>
+            <h4>Explore</h4>
+            <p>Home</p>
+            <p>Events</p>
+            <p>Clubs</p>
+        </div>
+
+        <div>
+            <h4>Contact</h4>
+            <p>aurix@college.com</p>
+            <p>+91 9876543210</p>
+        </div>
+
+    </div>
+
+    <div class="footer-bottom">
+        © 2026 AURIX • All rights reserved
+    </div>
+
+</footer>
+
+<!-- SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
+<script src="../JS/app.js"></script>
+
+<script>
+const token = localStorage.getItem("token");
+
+async function loadMyEvents() {
+    try {
+        const res = await fetch("http://localhost:5000/api/users/me/events", {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const events = await res.json();
+
+        const container = document.getElementById("myEvents");
+        container.innerHTML = "";
+
+        if (events.length === 0) {
+            container.innerHTML = `
+            <div style="text-align:center; padding:40px; width: 100%;">
+                <h3>No Events Yet 🚀</h3>
+                <p>Go explore and register for events!</p>
+            </div>
+            `;
+            return;
+        }
+
+        events.forEach(event => {
+            const eventId = event.id;
+            const eventDate = new Date(event.event_date);
+            const now = new Date();
+            let displayStatus = event.status;
+            
+            if (eventDate < now) displayStatus = "completed";
+            else if (eventDate.toDateString() === now.toDateString()) displayStatus = "live";
+            else displayStatus = "upcoming";
+
+            const statusBadge =
+                displayStatus === "live"
+                    ? `<span class="live-badge"><span class="live-dot"></span> LIVE</span>`
+                    : displayStatus === "completed"
+                    ? `<span class="status completed" style="background: rgba(74, 222, 128, 0.15); color: #4ade80; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid rgba(74, 222, 128, 0.3);">Completed</span>`
+                    : `<span class="status upcoming" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid rgba(59, 130, 246, 0.3);">Upcoming</span>`;
+
+            const buttonHTML =
+                displayStatus === "completed"
+                    ? `<button class="btn" disabled style="background: gray; cursor: not-allowed; opacity: 0.6;">Completed</button>`
+                    : `<button class="btn btn-danger" onclick="cancelRegistration(${eventId})">
+                        Cancel ❌
+                      </button>`;
+
+            const dateStr = eventDate.toLocaleDateString("en-GB", {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            const card = `
+            <div class="event-card" style="width: 320px;">
+                <img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d">
+
+                <div class="card-content">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        ${statusBadge}
+                        <span style="font-size:12px; opacity:0.6;">${event.club_name || 'General'}</span>
+                    </div>
+
+                    <h3 style="margin-bottom:8px;">${event.title}</h3>
+                    <p style="font-size:13px; margin-bottom:8px;"><i class="fas fa-calendar-alt"></i> ${dateStr}</p>
+                    <p class="desc" style="font-size:14px; opacity:0.8; max-height:80px; overflow-y:auto; margin-bottom:15px;">${event.description}</p>
+
+                    <div style="display:flex; gap:10px; margin-top:15px; flex-wrap:wrap; border-top:1px solid rgba(255,255,255,0.05); padding-top:10px;">
+                        <a href="event-details.html?id=${eventId}" 
+                           class="btn nav-btn" 
+                           onclick="handleNav(event, this)">
+                           View Details
+                        </a>
+                        ${buttonHTML}
+                    </div>
+
+                </div>
+            </div>
+            `;
+
+            container.innerHTML += card;
+        });
+
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+async function cancelRegistration(eventId) {
+    if (!confirm("Are you sure you want to cancel your registration?")) return;
+    try {
+        const res = await fetch(`http://localhost:5000/api/registrations/${eventId}`, {
+            method: "DELETE",
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        });
+
+        const data = await res.json();
+        alert(data.message || "Registration cancelled successfully!");
+        loadMyEvents();
+
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+loadMyEvents();
+</script>
+
+</body>
+</html>

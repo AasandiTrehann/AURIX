@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Manage Clubs | AURIX</title>
+
+<link rel="stylesheet" href="../CSS/style.css">
+<script src="https://kit.fontawesome.com/64d58efce2.js"></script>
+</head>
+
+<body class="dashboard-page">
+
+<!-- PARTICLES -->
+<div id="particles-js"></div>
+
+<!-- ================= TOPBAR ================= -->
+<div class="topbar">
+
+    <div class="nav-left">
+        <i class="fas fa-bars menu-icon" onclick="toggleSidebar()"></i>
+        <h2 class="logo">AURIX ADMIN</h2>
+    </div>
+
+    <div class="menu">
+        <a href="admin-dashboard.html" class="nav-btn" onclick="handleNav(event, this)">Dashboard</a>
+        <a href="approve-events.html" class="nav-btn" onclick="handleNav(event, this)">Approve Events</a>
+        <a href="manage_clubs.html" class="active">Clubs</a>
+        <a href="manage-user.html" class="nav-btn" onclick="handleNav(event, this)">Users</a>
+        <a href="../student_folder/announcements.html" class="nav-btn" onclick="handleNav(event, this)">Announcements</a>
+    </div>
+
+    <i class="fas fa-user profile-icon" onclick="toggleSidebar()"></i>
+
+</div>
+
+<!-- ================= SIDEBAR ================= -->
+<div class="sidebar" id="sidebar">
+
+    <h3>System Admin</h3>
+
+    <a href="admin-dashboard.html">⚙️ Dashboard</a>
+    <a href="approve-events.html">✅ Approve Events</a>
+    <a href="manage_clubs.html">🏫 Manage Clubs</a>
+    <a href="manage-user.html">👥 Users</a>
+    <a href="../student_folder/announcements.html">📢 Announcements</a>
+
+    <hr>
+
+    <a onclick="logout()">🚪 Logout</a>
+
+</div>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<!-- ================= MAIN ================= -->
+<div class="main-content">
+
+    <!-- ================= ACTIVE CLUBS ================= -->
+    <h2 class="section-title">🏫 Active Clubs</h2>
+
+    <div class="table-card">
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Club ID</th>
+                    <th>Club Name</th>
+                    <th>Description</th>
+                    <th>Managed By (Admin)</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <!-- Dynamic loading -->
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <h2 class="section-title">➕ Create New Club</h2>
+    <div class="form-card">
+        <form id="createClubForm">
+            <input type="text" name="club_name" placeholder="Club Name" required>
+            <textarea name="description" placeholder="Club Description" required></textarea>
+            <input type="number" name="admin_id" placeholder="Admin (User) ID" required>
+            <button type="submit" class="btn">Create Club</button>
+        </form>
+    </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+
+    <div class="footer-container">
+
+        <div>
+            <h2>AURIX</h2>
+            <p>Smart College Event Platform</p>
+        </div>
+
+        <div>
+            <h4>Admin Panel</h4>
+            <p>Dashboard</p>
+            <p>Users</p>
+            <p>Clubs</p>
+        </div>
+
+        <div>
+            <h4>Contact</h4>
+            <p>aurix@college.com</p>
+            <p>+91 9876543210</p>
+        </div>
+
+    </div>
+
+    <div class="footer-bottom">
+        © 2026 AURIX • All rights reserved
+    </div>
+
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
+<script src="../JS/app.js"></script>
+
+<script>
+const user = JSON.parse(localStorage.getItem("user"));
+const token = localStorage.getItem("token");
+
+if (!user || user.role !== 'admin') {
+    window.location.href = "../login.html";
+}
+
+async function loadClubs() {
+    try {
+        const res = await fetch("http://localhost:5000/api/clubs", {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const clubs = await res.json();
+        
+        const tbody = document.querySelector("tbody");
+        tbody.innerHTML = "";
+        
+        clubs.forEach(c => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td><b>${c.id}</b></td>
+                <td>${c.name}</td>
+                <td style="max-width: 320px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${c.description}</td>
+                <td>${c.admin_name || 'N/A'} (ID: ${c.admin_id || 'None'})</td>
+                <td>
+                    <button class="btn btn-danger" onclick="deleteClub(${c.id})">Delete</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    } catch (err) {
+        console.error("Error loading clubs:", err);
+    }
+}
+
+document.getElementById("createClubForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const name = e.target.club_name.value;
+    const description = e.target.description.value;
+    const admin_id = e.target.admin_id.value;
+
+    try {
+        const res = await fetch("http://localhost:5000/api/clubs", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({ name, description, admin_id })
+        });
+        if (res.ok) {
+            alert("Club Created successfully! ✅");
+            loadClubs();
+            e.target.reset();
+        } else {
+            const data = await res.json();
+            alert(data.message || "Failed to create club");
+        }
+    } catch (err) {
+        console.error(err);
+    }
+});
+
+async function deleteClub(clubId) {
+    if (!confirm("Are you sure you want to delete this club?")) return;
+    try {
+        const res = await fetch(`http://localhost:5000/api/clubs/${clubId}`, {
+            method: "DELETE",
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        });
+        const data = await res.json();
+        alert(data.message);
+        loadClubs();
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+loadClubs();
+</script>
+
+</body>
+</html>

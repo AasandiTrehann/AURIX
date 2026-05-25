@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register | AURIX</title>
+
+    <!-- FONT -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="CSS/style.css">
+</head>
+
+<body class="auth-page">
+
+<!-- PARTICLES -->
+<div id="particles-js"></div>
+
+<!-- ORBIT -->
+<div class="background-orbit">
+    <div class="orbit orbit-big"><div class="dot"></div></div>
+    <div class="orbit orbit-mid"><div class="dot"></div></div>
+    <div class="orbit orbit-small"><div class="dot"></div></div>
+</div>
+
+<!-- NAVBAR -->
+<div class="nav-wrapper">
+    <nav class="glass-nav">
+        <h2>AURIX</h2>
+
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="login.html" class="nav-btn" onclick="handleNav(event, this)">Events</a>
+            <a href="login.html" class="nav-btn" onclick="handleNav(event, this)">Clubs</a>
+            <a href="login.html" class="nav-btn" onclick="handleNav(event, this)">Login</a>
+        </div>
+    </nav>
+</div>
+
+<!-- AUTH CARD -->
+<section class="auth-wrapper">
+
+    <div class="auth-big-card">
+
+        <!-- LEFT -->
+        <div class="auth-left">
+            <h1>Be a part of <span>AURIX</span></h1>
+            <p>Join your college’s smartest event platform 🚀</p>
+
+            <!-- ROLE INFO -->
+            <p style="margin-top:20px; font-size:14px; opacity:0.7;">
+                Student • Club Admin • System Admin
+            </p>
+        </div>
+
+        <!-- RIGHT -->
+        <div class="auth-right">
+
+            <h2>Create Account</h2>
+
+            <form id="registerForm">
+
+                <input type="text" name="fullName" placeholder="Full Name" required>
+                <input type="email" name="email" placeholder="Email" required>
+                <input type="password" name="password" placeholder="Password" required>
+                
+                <select name="role" required style="width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: white; outline: none; transition: 0.3s; font-family: 'Poppins', sans-serif;">
+                    <option value="student" style="color: black;">Student</option>
+                    <option value="club_admin" style="color: black;">Club Admin</option>
+                    <option value="admin" style="color: black;">System Admin</option>
+                </select>
+
+                <button id="registerBtn" type="submit">
+                    <span>Register</span>
+                </button>
+
+                <p class="auth-switch">
+                    Already have an account?
+                    <a href="login.html" class="nav-btn" onclick="handleNav(event, this)">Login</a>
+                </p>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+
+    <div class="footer-container">
+
+        <div>
+            <h2>AURIX</h2>
+            <p>Smart College Event Platform</p>
+        </div>
+
+        <div>
+            <h4>Explore</h4>
+            <p>Home</p>
+            <p>Events</p>
+            <p>Clubs</p>
+        </div>
+
+        <div>
+            <h4>Contact</h4>
+            <p>aurix@college.com</p>
+            <p>+91 9876543210</p>
+        </div>
+
+    </div>
+
+    <div class="footer-bottom">
+        © 2026 AURIX • All rights reserved
+    </div>
+
+</footer>
+
+<!-- SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
+<script src="JS/app.js"></script>
+<script>
+document.getElementById("registerForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const form = e.target;
+
+    const name = form.fullName.value;
+    const email = form.email.value;
+    const password = form.password.value;
+    const role = form.role.value;
+
+    try {
+        const res = await fetch("http://localhost:5000/api/auth/register", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ name, email, password, role })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            alert("Registered Successfully ✅");
+            window.location.href = "login.html";
+        } else {
+            alert(data.message || "Registration failed ❌");
+        }
+
+    } catch (err) {
+        console.log(err);
+        alert("Server error ❌");
+    }
+});
+</script>
+</body>
+</html>

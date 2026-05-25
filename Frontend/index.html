@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AURIX</title>
+
+    <!-- FONT -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="CSS/style.css">
+    
+    <!-- FONTAWESOME -->
+    <script src="https://kit.fontawesome.com/64d58efce2.js"></script>
+</head>
+
+<body class="home-page">
+
+<!-- PARTICLES -->
+<div id="particles-js"></div>
+
+<!-- ORBIT -->
+<div class="background-orbit">
+    <div class="orbit orbit-big"><div class="dot"></div></div>
+    <div class="orbit orbit-mid"><div class="dot"></div></div>
+    <div class="orbit orbit-small"><div class="dot"></div></div>
+</div>
+
+<!-- NAVBAR -->
+<div class="nav-wrapper">
+    <nav class="glass-nav">
+        <div class="nav-left">
+            <i class="fas fa-bars menu-icon" onclick="toggleSidebar()"></i>
+            <h2>AURIX</h2>
+        </div>
+
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="login.html" class="nav-btn" onclick="handleNav(event, this)">Events</a>
+            <a href="login.html" class="nav-btn" onclick="handleNav(event, this)">Clubs</a>
+            <a href="login.html" class="nav-btn" onclick="handleNav(event, this)">Login</a>
+        </div>
+    </nav>
+</div>
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+    <h3>Menu</h3>
+    <a href="index.html">🏠 Home</a>
+    <a href="login.html" onclick="handleNav(event, this)">👤 Profile</a>
+    <a href="login.html" onclick="handleNav(event, this)">📅 My Events</a>
+    <a href="login.html" onclick="handleNav(event, this)">👥 Clubs</a>
+    <a href="login.html" onclick="handleNav(event, this)">📢 Announcements</a>
+    <hr>
+    <a href="login.html" onclick="handleNav(event, this)">🚪 Login / Register</a>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<!-- HERO -->
+<section class="hero">
+
+    <h1>
+        Discover College Events <br>
+        <span>All in One Place</span>
+    </h1>
+
+    <p>
+        Manage, explore and participate in events seamlessly with AURIX.
+    </p>
+
+    <div class="buttons">
+
+        <a href="register.html" class="btn-primary nav-btn" onclick="handleNav(event, this)">
+            <span>Get Started</span>
+        </a>
+
+        <a href="login.html" class="btn-secondary nav-btn" onclick="handleNav(event, this)">
+            <span>Login</span>
+        </a>
+
+    </div>
+
+    <!-- ROLE INFO -->
+    <p style="margin-top:15px; font-size:14px; opacity:0.7;">
+        Login as Student • Club Admin • System Admin
+    </p>
+
+</section>
+
+<!-- FEATURES -->
+<section class="features reveal">
+
+    <h2>Why AURIX?</h2>
+
+    <div class="feature-grid">
+
+        <div class="feature-card reveal">
+            <h3>All Events in One Place</h3>
+            <p>Discover all college events easily</p>
+        </div>
+
+        <div class="feature-card reveal">
+            <h3>Easy Registration</h3>
+            <p>Register for events in one click</p>
+        </div>
+
+        <div class="feature-card reveal">
+            <h3>Club Management</h3>
+            <p>Manage your clubs efficiently</p>
+        </div>
+
+    </div>
+
+</section>
+
+<!-- EVENTS -->
+<section class="events-section reveal">
+
+    <h2>Trending Events</h2>
+
+    <div class="event-grid">
+
+        <div class="event-card reveal">
+            <h3>Hackathon 2026</h3>
+            <p>Compete with top coders</p>
+            <a href="login.html"  class="event-btn nav-btn" onclick="handleNav(event, this)">Explore</a>
+        </div>
+
+        <div class="event-card reveal">
+            <h3>Music Fest</h3>
+            <p>Experience live performances</p>
+           <a href="login.html"  class="event-btn nav-btn" onclick="handleNav(event, this)">Explore</a>
+        </div>
+
+        <div class="event-card reveal">
+            <h3>Sports Meet</h3>
+            <p>Show your athletic skills</p>
+            <a href="login.html"  class="event-btn nav-btn" onclick="handleNav(event, this)">Explore</a>
+        </div>
+
+    </div>
+
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+
+    <div class="footer-container">
+
+        <div>
+            <h2>AURIX</h2>
+            <p>Smart College Event Platform</p>
+        </div>
+
+        <div>
+            <h4>Explore</h4>
+            <p>Home</p>
+            <p>Events</p>
+            <p>Clubs</p>
+        </div>
+
+        <div>
+            <h4>Contact</h4>
+            <p>aurix@college.com</p>
+            <p>+91 9876543210</p>
+        </div>
+
+    </div>
+
+    <div class="footer-bottom">
+        © 2026 AURIX • All rights reserved
+    </div>
+
+</footer>
+
+<!-- SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
+<script src="JS/app.js"></script>
+
+</body>
+</html>

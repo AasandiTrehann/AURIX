@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Club Admin Dashboard</title>
+
+<link rel="stylesheet" href="../CSS/style.css">
+<script src="https://kit.fontawesome.com/64d58efce2.js"></script>
+</head>
+
+<body class="dashboard-page">
+
+<!-- PARTICLES -->
+<div id="particles-js"></div>
+
+<!-- ================= TOPBAR ================= -->
+<div class="topbar">
+
+    <div class="nav-left">
+        <i class="fas fa-bars menu-icon" onclick="toggleSidebar()"></i>
+        <h2 class="logo">AURIX</h2>
+    </div>
+
+    <div class="menu">
+        <a href="clubadmin_dashboard.html" class="active">Dashboard</a>
+        <a href="create-event.html" class="nav-btn" onclick="handleNav(event, this)">Create Event</a>
+        <a href="manage-events.html" class="nav-btn" onclick="handleNav(event, this)">Manage Events</a>
+        <a href="registrations.html" class="nav-btn" onclick="handleNav(event, this)">Registrations</a>
+        <a href="announcements.html" class="nav-btn" onclick="handleNav(event, this)">Announcements</a>
+    </div>
+
+    <i class="fas fa-user profile-icon" onclick="toggleSidebar()"></i>
+
+</div>
+
+<!-- ================= SIDEBAR ================= -->
+<div class="sidebar" id="sidebar">
+
+    <h3>Club Admin</h3>
+
+    <a href="clubadmin_dashboard.html">📊 Dashboard</a>
+    <a href="create-event.html">➕ Create Event</a>
+    <a href="manage-events.html">📅 Manage Events</a>
+    <a href="registrations.html">👥 Registrations</a>
+    <a href="announcements.html">📢 Announcements</a>
+
+    <hr>
+
+    <a onclick="logout()">🚪 Logout</a>
+
+</div>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<!-- ================= MAIN ================= -->
+<div class="main-content">
+
+    <!-- 🔥 CREATE BUTTON -->
+    <a href="create-event.html" class="btn nav-btn" onclick="handleNav(event, this)">
+        ➕ Create New Event
+    </a>
+
+    <!-- ================= STATS ================= -->
+    <h2 class="section-title">📊 Club Overview</h2>
+
+    <div class="stats">
+
+        <div class="stat-card">
+            <h3 id="totalEvents">12</h3>
+            <p>Total Events</p>
+        </div>
+
+        <div class="stat-card">
+            <h3 id="totalRegistrations">320</h3>
+            <p>Total Registrations</p>
+        </div>
+
+        <div class="stat-card">
+            <h3 id="liveEventsCount">3</h3>
+            <p>Live Events</p>
+        </div>
+
+        <div class="stat-card">
+            <h3 id="draftEvents">2</h3>
+            <p>Draft Events</p>
+        </div>
+
+    </div>
+
+    <!-- ================= GROWTH ================= -->
+    <h2 class="section-title">📈 Growth</h2>
+
+    <div class="event-grid">
+
+        <div class="event-card">
+            <div class="card-content">
+                <h3 id="growthRate">+24%</h3>
+                <p>Registrations this week</p>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ================= LIVE EVENTS ================= -->
+    <h2 class="section-title">🔴 Live Events</h2>
+
+    <div class="event-grid" id="liveEventsContainer">
+        <!-- Live events will be injected here -->
+    </div>
+
+    <!-- ================= PENDING REQUESTS ================= -->
+    <h2 class="section-title">⏳ Pending Join Requests</h2>
+
+    <div class="event-grid" id="pendingRequestsContainer">
+        <!-- Requests will be injected here dynamically -->
+    </div>
+
+    <!-- ================= QUICK ACTIONS ================= -->
+    <h2 class="section-title">⚡ Quick Actions</h2>
+
+    <div class="event-grid">
+
+        <div class="event-card">
+            <div class="card-content">
+                <h3>Create Event</h3>
+                <p>Add new club event</p>
+
+                <a href="create-event.html" class="btn nav-btn" onclick="handleNav(event, this)">Go</a>
+            </div>
+        </div>
+
+        <div class="event-card">
+            <div class="card-content">
+                <h3>Manage Events</h3>
+                <p>Edit or delete events</p>
+
+                <a href="manage-events.html" class="btn nav-btn" onclick="handleNav(event, this)">Go</a>
+            </div>
+        </div>
+
+        <div class="event-card">
+            <div class="card-content">
+                <h3>View Registrations</h3>
+                <p>Check student entries</p>
+
+                <a href="registrations.html" class="btn nav-btn" onclick="handleNav(event, this)">Go</a>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<!-- ================= FOOTER ================= -->
+<footer class="footer">
+
+    <div class="footer-container">
+
+        <div>
+            <h2>AURIX</h2>
+            <p>Smart College Event Platform</p>
+        </div>
+
+        <div>
+            <h4>Admin Panel</h4>
+            <p>Dashboard</p>
+            <p>Events</p>
+            <p>Registrations</p>
+        </div>
+
+        <div>
+            <h4>Contact</h4>
+            <p>aurix@college.com</p>
+            <p>+91 9876543210</p>
+        </div>
+
+    </div>
+
+    <div class="footer-bottom">
+        © 2026 AURIX • All rights reserved
+    </div>
+
+</footer>
+
+<!-- SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
+<script src="../JS/app.js"></script>
+
+<script>
+const user = JSON.parse(localStorage.getItem("user"));
+const token = localStorage.getItem("token");
+
+if (!user || (user.role !== 'club_admin' && user.role !== 'admin')) {
+    window.location.href = "../login.html";
+}
+
+async function loadPendingRequests() {
+    try {
+        const res = await fetch("http://localhost:5000/api/club-admin/requests", {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const requests = await res.json();
+        
+        const container = document.getElementById("pendingRequestsContainer");
+        container.innerHTML = "";
+        
+        if (requests.length === 0) {
+            container.innerHTML = '<p style="padding: 20px; opacity: 0.6;">No pending join requests.</p>';
+            return;
+        }
+
+        requests.forEach(req => {
+            container.innerHTML += `
+                <div class="event-card" style="width: 320px;">
+                    <div class="card-content">
+                        <h3>${req.student_name}</h3>
+                        <p><strong>Course:</strong> ${req.course}</p>
+                        <p><strong>Roll/Phone:</strong> ${req.roll_number}</p>
+                        <p><strong>Email:</strong> ${req.email}</p>
+                        <p class="desc"><strong>Reason:</strong> ${req.reason || 'N/A'}</p>
+                        <div style="display:flex; gap:10px; margin-top:15px;">
+                            <button class="btn btn-success" onclick="handleRequest(${req.id}, 'approved')">Approve ✓</button>
+                            <button class="btn btn-danger" onclick="handleRequest(${req.id}, 'rejected')">Reject ✗</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+    } catch (err) {
+        console.error("Error loading requests:", err);
+    }
+}
+
+async function handleRequest(requestId, status) {
+    if (!confirm(`Are you sure you want to set request as ${status}?`)) return;
+    try {
+        const res = await fetch(`http://localhost:5000/api/club-admin/requests/${requestId}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({ status })
+        });
+        const data = await res.json();
+        alert(data.message);
+        loadPendingRequests();
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+async function loadDashboard() {
+    try {
+        // 1. Get Club Info
+        const clubRes = await fetch("http://localhost:5000/api/my-club", {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const club = await clubRes.json();
+        
+        if (club.id) {
+            // Load pending requests
+            loadPendingRequests();
+
+            // 2. Get Events for this club
+            const eventsRes = await fetch(`http://localhost:5000/api/clubs/${club.id}/events`, {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            const events = await eventsRes.json();
+
+            let totalRegs = 0;
+            let liveCount = 0;
+            let draftCount = 0;
+            let liveEventsHTML = "";
+
+            for (const event of events) {
+                if (event.status === 'published') {
+                    // Check if it's currently live based on date
+                    const eventDate = new Date(event.event_date);
+                    const now = new Date();
+                    if (eventDate.toDateString() === now.toDateString()) {
+                        liveCount++;
+                        liveEventsHTML += `
+                            <div class="event-card">
+                                <div class="card-content">
+                                    <span class="live-badge">
+                                        <span class="live-dot"></span> LIVE
+                                    </span>
+                                    <h3>${event.title}</h3>
+                                    <p>${new Date(event.event_date).toLocaleString()} • ${event.venue}</p>
+                                </div>
+                            </div>
+                        `;
+                    }
+                } else if (event.status === 'draft') {
+                    draftCount++;
+                }
+
+                // 3. Get Registrations for each event
+                const regRes = await fetch(`http://localhost:5000/api/events/${event.id}/registrations`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                const registrations = await regRes.json();
+                totalRegs += registrations.length;
+            }
+
+            // Update UI
+            document.getElementById("totalEvents").innerText = events.length;
+            document.getElementById("totalRegistrations").innerText = totalRegs;
+            document.getElementById("liveEventsCount").innerText = liveCount; 
+            document.getElementById("draftEvents").innerText = draftCount;
+
+            document.getElementById("liveEventsContainer").innerHTML = liveEventsHTML || '<p style="padding: 20px; opacity: 0.6;">No live events at the moment.</p>';
+        }
+    } catch (err) {
+        console.error("Dashboard load error:", err);
+    }
+}
+
+loadDashboard();
+</script>
+
+</body>
+</html>

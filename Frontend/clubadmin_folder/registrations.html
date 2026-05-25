@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Registrations | AURIX</title>
+
+<link rel="stylesheet" href="../CSS/style.css">
+<script src="https://kit.fontawesome.com/64d58efce2.js"></script>
+</head>
+
+<body class="dashboard-page">
+
+<!-- PARTICLES -->
+<div id="particles-js"></div>
+
+<!-- ================= TOPBAR ================= -->
+<div class="topbar">
+
+    <div class="nav-left">
+        <i class="fas fa-bars menu-icon" onclick="toggleSidebar()"></i>
+        <h2 class="logo">AURIX</h2>
+    </div>
+
+    <div class="menu">
+        <a href="clubadmin_dashboard.html" class="nav-btn" onclick="handleNav(event, this)">Dashboard</a>
+        <a href="create-event.html" class="nav-btn" onclick="handleNav(event, this)">Create Event</a>
+        <a href="manage-events.html" class="nav-btn" onclick="handleNav(event, this)">Manage Events</a>
+        <a href="registrations.html" class="active">Registrations</a>
+        <a href="announcements.html" class="nav-btn" onclick="handleNav(event, this)">Announcements</a>
+    </div>
+
+    <i class="fas fa-user profile-icon" onclick="toggleSidebar()"></i>
+
+</div>
+
+<!-- ================= SIDEBAR ================= -->
+<div class="sidebar" id="sidebar">
+
+    <h3>Club Admin</h3>
+
+    <a href="clubadmin_dashboard.html">📊 Dashboard</a>
+    <a href="create-event.html">➕ Create Event</a>
+    <a href="manage-events.html">📅 Manage Events</a>
+    <a href="registrations.html">👥 Registrations</a>
+    <a href="announcements.html">📢 Announcements</a>
+
+    <hr>
+
+    <a onclick="logout()">🚪 Logout</a>
+
+</div>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<!-- ================= MAIN ================= -->
+<div class="main-content">
+
+    <h2 class="section-title">👥 Event Registrations</h2>
+
+    <!-- FILTER -->
+    <div style="margin-bottom:20px;">
+        <label style="font-weight:bold; margin-right:10px; font-size:14px; opacity:0.8;">Select Event:</label>
+        <select id="eventFilter" onchange="renderRegistrations()" style="background: rgba(255, 255, 255, 0.1); color: white; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.15); padding: 12px; font-family: 'Poppins', sans-serif; outline: none; cursor: pointer; min-width: 250px;">
+            <option value="all">All Events</option>
+        </select>
+    </div>
+
+    <!-- ================= REGISTRATIONS TABLE ================= -->
+    <div class="table-card" style="margin-top:20px; overflow-x:auto; background: rgba(255,255,255,0.03); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px;">
+        <table style="width:100%; border-collapse:collapse; text-align:left;">
+            <thead>
+                <tr style="border-bottom:1px solid rgba(255,255,255,0.1); color:#a78bfa; font-size:14px;">
+                    <th style="padding:15px 10px; font-weight: 600;">Student Name</th>
+                    <th style="padding:15px 10px; font-weight: 600;">Email</th>
+                    <th style="padding:15px 10px; font-weight: 600;">Event Title</th>
+                    <th style="padding:15px 10px; font-weight: 600;">Registration Date</th>
+                    <th style="padding:15px 10px; font-weight: 600;">Status</th>
+                </tr>
+            </thead>
+            <tbody id="registrationsTableBody" style="font-size:14px; color:#cbd5f5;">
+                <!-- Injected dynamically -->
+            </tbody>
+        </table>
+        <div id="noRegistrationsMsg" style="padding:30px; text-align:center; opacity:0.6; display:none; font-style:italic;">No student registrations found.</div>
+    </div>
+
+</div>
+
+<!-- ================= FOOTER ================= -->
+<footer class="footer">
+
+    <div class="footer-container">
+
+        <div>
+            <h2>AURIX</h2>
+            <p>Smart College Event Platform</p>
+        </div>
+
+        <div>
+            <h4>Admin Panel</h4>
+            <p>Dashboard</p>
+            <p>Events</p>
+            <p>Registrations</p>
+        </div>
+
+        <div>
+            <h4>Contact</h4>
+            <p>aurix@college.com</p>
+            <p>+91 9876543210</p>
+        </div>
+
+    </div>
+
+    <div class="footer-bottom">
+        © 2026 AURIX • All rights reserved
+    </div>
+
+</footer>
+
+<!-- SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
+<script src="../JS/app.js"></script>
+
+<script>
+const user = JSON.parse(localStorage.getItem("user"));
+const token = localStorage.getItem("token");
+
+if (!user || (user.role !== 'club_admin' && user.role !== 'admin')) {
+    window.location.href = "../login.html";
+}
+
+let club = null;
+let clubEvents = [];
+let allRegistrations = [];
+
+async function init() {
+    try {
+        // 1. Fetch club info
+        const clubRes = await fetch("http://localhost:5000/api/my-club", {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        if (!clubRes.ok) throw new Error("Failed to load club details");
+        club = await clubRes.json();
+
+        if (club.id) {
+            // 2. Fetch all events for this club
+            const eventsRes = await fetch(`http://localhost:5000/api/clubs/${club.id}/events`, {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            if (!eventsRes.ok) throw new Error("Failed to load club events");
+            clubEvents = await eventsRes.json();
+
+            // Populate the dropdown
+            const filter = document.getElementById("eventFilter");
+            clubEvents.forEach(e => {
+                const opt = document.createElement("option");
+                opt.value = e.id;
+                opt.innerText = e.title;
+                filter.appendChild(opt);
+            });
+
+            // 3. Load all registrations
+            await loadAllRegistrations();
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Initialization error: " + err.message);
+    }
+}
+
+async function loadAllRegistrations() {
+    allRegistrations = [];
+    
+    // Fetch registrations for all club events in parallel
+    const promises = clubEvents.map(async (event) => {
+        try {
+            const res = await fetch(`http://localhost:5000/api/events/${event.id}/registrations`, {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const regs = await res.json();
+                regs.forEach(r => {
+                    allRegistrations.push({
+                        ...r,
+                        eventTitle: event.title,
+                        eventDate: event.event_date
+                    });
+                });
+            }
+        } catch (e) {
+            console.error("Error fetching registrations for event: " + event.id, e);
+        }
+    });
+
+    await Promise.all(promises);
+    
+    // Sort registrations by registered_at desc
+    allRegistrations.sort((a, b) => new Date(b.registered_at) - new Date(a.registered_at));
+    
+    renderRegistrations();
+}
+
+function renderRegistrations() {
+    const filterId = document.getElementById("eventFilter").value;
+    const tbody = document.getElementById("registrationsTableBody");
+    const noRegs = document.getElementById("noRegistrationsMsg");
+    
+    tbody.innerHTML = "";
+    
+    const filtered = filterId === "all" 
+        ? allRegistrations 
+        : allRegistrations.filter(r => r.event_id == filterId);
+        
+    if (filtered.length === 0) {
+        noRegs.style.display = "block";
+        return;
+    }
+    
+    noRegs.style.display = "none";
+    
+    filtered.forEach(reg => {
+        const regDate = new Date(reg.registered_at).toLocaleString("en-GB", {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        tbody.innerHTML += `
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.05); font-size:14px; transition: background 0.2s;">
+                <td style="padding:15px 10px; font-weight:500; color:white;">${reg.name}</td>
+                <td style="padding:15px 10px; opacity:0.8;">${reg.email}</td>
+                <td style="padding:15px 10px; font-weight:500; color:#a78bfa;">${reg.eventTitle}</td>
+                <td style="padding:15px 10px; opacity:0.7;">${regDate}</td>
+                <td style="padding:15px 10px;">
+                    <span style="background: rgba(74, 222, 128, 0.12); color: #4ade80; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: bold; border: 1px solid rgba(74, 222, 128, 0.25); text-transform: uppercase; letter-spacing: 0.5px;">
+                        ${reg.status}
+                    </span>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+init();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>System Admin Dashboard | AURIX</title>
+
+<link rel="stylesheet" href="../CSS/style.css">
+<script src="https://kit.fontawesome.com/64d58efce2.js"></script>
+</head>
+
+<body class="dashboard-page">
+
+<div id="particles-js"></div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+
+    <div class="nav-left">
+        <i class="fas fa-bars menu-icon" onclick="toggleSidebar()"></i>
+        <h2 class="logo">AURIX ADMIN</h2>
+    </div>
+
+    <div class="menu">
+        <a href="admin-dashboard.html" class="active">Dashboard</a>
+        <a href="approve-events.html">Approve Events</a>
+        <a href="manage_clubs.html">Clubs</a>
+        <a href="manage-user.html">Users</a>
+        <a href="../student_folder/announcements.html">Announcements</a>
+    </div>
+
+    <i class="fas fa-user profile-icon" onclick="toggleSidebar()"></i>
+
+</div>
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+    <h3>System Admin</h3>
+
+    <a href="admin-dashboard.html">⚙️ Dashboard</a>
+    <a href="approve-events.html">✅ Approve Events</a>
+    <a href="manage_clubs.html">🏫 Manage Clubs</a>
+    <a href="manage-user.html">👥 Users</a>
+    <a href="../student_folder/announcements.html">📢 Announcements</a>
+
+    <hr>
+    <a onclick="logout()">🚪 Logout</a>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<!-- MAIN -->
+<div class="main-content">
+
+    <!-- STATS -->
+    <h2 class="section-title">📊 Platform Overview</h2>
+
+    <div class="stats">
+
+        <div class="stat-card">
+            <h3 id="totalUsers">0</h3>
+            <p>Total Users</p>
+        </div>
+
+        <div class="stat-card">
+            <h3 id="totalEvents">0</h3>
+            <p>Total Events</p>
+        </div>
+
+        <div class="stat-card">
+            <h3 id="activeClubs">0</h3>
+            <p>Active Clubs</p>
+        </div>
+
+        <div class="stat-card">
+            <h3 id="pendingApprovals">0</h3>
+            <p>Pending Approvals</p>
+        </div>
+
+    </div>
+
+    <!-- CHART SECTION -->
+    <h2 class="section-title">📈 Analytics</h2>
+
+    <div class="event-grid" style="display: flex; gap: 30px; justify-content: space-between; flex-wrap: wrap;">
+
+        <!-- LINE CHART -->
+        <div class="event-card" style="flex: 1; min-width: 320px; padding: 20px;">
+            <div class="card-content">
+                <h3 style="margin-bottom: 15px;">Registrations Growth</h3>
+                <div style="position: relative; height: 250px; width: 100%;">
+                    <canvas id="registrationsChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Doughnut CHART -->
+        <div class="event-card" style="flex: 1; min-width: 320px; padding: 20px;">
+            <div class="card-content">
+                <h3 style="margin-bottom: 15px;">Event Categories</h3>
+                <div style="position: relative; height: 250px; width: 100%;">
+                    <canvas id="categoriesChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- RECENT ACTIVITY -->
+    <h2 class="section-title">⚡ Recent Activity</h2>
+
+    <div class="event-grid" id="recentActivityGrid">
+        <!-- Loaded dynamically -->
+    </div>
+
+    <!-- QUICK ACTIONS -->
+    <h2 class="section-title">⚡ Quick Actions</h2>
+
+    <div class="event-grid">
+
+        <div class="event-card">
+            <div class="card-content">
+                <h3>Approve Events</h3>
+                <a href="approve-events.html" class="btn">Go</a>
+            </div>
+        </div>
+
+        <div class="event-card">
+            <div class="card-content">
+                <h3>Manage Users</h3>
+                <a href="manage-user.html" class="btn">Go</a>
+            </div>
+        </div>
+
+        <div class="event-card">
+            <div class="card-content">
+                <h3>Post Announcement</h3>
+                <a href="../student_folder/announcements.html" class="btn">Go</a>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="../JS/app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
+
+<script>
+const user = JSON.parse(localStorage.getItem("user"));
+const token = localStorage.getItem("token");
+
+if (!user || user.role !== 'admin') {
+    window.location.href = "../login.html";
+}
+
+async function loadAdminStats() {
+    try {
+        // Fetch users
+        const userRes = await fetch("http://localhost:5000/api/admin/users", {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const users = await userRes.json();
+        document.getElementById("totalUsers").innerText = users.length;
+
+        // Fetch clubs
+        const clubRes = await fetch("http://localhost:5000/api/clubs", {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const clubs = await clubRes.json();
+        document.getElementById("activeClubs").innerText = clubs.length;
+
+        // Fetch events (all, including pending)
+        const eventRes = await fetch("http://localhost:5000/api/admin/events", {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const events = await eventRes.json();
+        
+        // Active/Published events count
+        const publishedEvents = events.filter(e => e.status === "published" || e.status === "completed" || e.status === "live");
+        document.getElementById("totalEvents").innerText = publishedEvents.length;
+
+        // Pending events count
+        const pendingEvents = events.filter(e => e.status === "pending");
+        document.getElementById("pendingApprovals").innerText = pendingEvents.length;
+
+        // Fetch registrations
+        const regRes = await fetch("http://localhost:5000/api/admin/registrations", {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const registrations = await regRes.json();
+
+        // Render Charts
+        renderCharts(events, registrations);
+
+        // Render Recent Activity
+        const activityGrid = document.getElementById("recentActivityGrid");
+        activityGrid.innerHTML = "";
+
+        if (pendingEvents.length > 0) {
+            const latestPending = pendingEvents[pendingEvents.length - 1];
+            activityGrid.innerHTML += `
+                <div class="event-card" style="width: 320px;">
+                    <div class="card-content">
+                        <h3>⏳ Approval Required</h3>
+                        <p>Event <b>${latestPending.title}</b> is pending review.</p>
+                        <a href="approve-events.html" class="btn" style="margin-top: 10px; display: inline-block;">Approve Event</a>
+                    </div>
+                </div>
+            `;
+        }
+
+        if (users.length > 0) {
+            const latestUser = users[users.length - 1];
+            activityGrid.innerHTML += `
+                <div class="event-card" style="width: 320px;">
+                    <div class="card-content">
+                        <h3>👤 New Member</h3>
+                        <p>${latestUser.name} (${latestUser.role}) registered.</p>
+                        <a href="manage-user.html" class="btn" style="margin-top: 10px; display: inline-block;">Manage Users</a>
+                    </div>
+                </div>
+            `;
+        }
+
+    } catch (err) {
+        console.error("Admin Dashboard error:", err);
+    }
+}
+
+function renderCharts(events, registrations) {
+    // 1. Categories Chart
+    const categoriesData = {};
+    events.forEach(e => {
+        const cat = e.category || 'General';
+        categoriesData[cat] = (categoriesData[cat] || 0) + 1;
+    });
+
+    const ctxCat = document.getElementById('categoriesChart').getContext('2d');
+    new Chart(ctxCat, {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(categoriesData),
+            datasets: [{
+                data: Object.values(categoriesData),
+                backgroundColor: [
+                    'rgba(124, 58, 237, 0.75)',  // Violet
+                    'rgba(99, 102, 241, 0.75)',  // Indigo
+                    'rgba(236, 72, 153, 0.75)',  // Pink
+                    'rgba(14, 165, 233, 0.75)',  // Sky Blue
+                    'rgba(234, 179, 8, 0.75)'    // Yellow
+                ],
+                borderColor: 'rgba(255, 255, 255, 0.1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: { color: 'white', font: { family: 'Poppins' } }
+                }
+            }
+        }
+    });
+
+    // 2. Registrations Growth Chart
+    const dateCounts = {};
+    registrations.forEach(r => {
+        const dateStr = new Date(r.registered_at).toLocaleDateString();
+        dateCounts[dateStr] = (dateCounts[dateStr] || 0) + 1;
+    });
+
+    const sortedDates = Object.keys(dateCounts).sort((a, b) => new Date(a) - new Date(b));
+    let cumulative = 0;
+    const cumulativeCounts = sortedDates.map(date => {
+        cumulative += dateCounts[date];
+        return cumulative;
+    });
+
+    const ctxReg = document.getElementById('registrationsChart').getContext('2d');
+    new Chart(ctxReg, {
+        type: 'line',
+        data: {
+            labels: sortedDates.length ? sortedDates : ['No Registrations'],
+            datasets: [{
+                label: 'Cumulative Registrations',
+                data: cumulativeCounts.length ? cumulativeCounts : [0],
+                fill: true,
+                backgroundColor: 'rgba(167, 139, 250, 0.2)',
+                borderColor: '#a78bfa',
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: { grid: { color: 'rgba(255, 255, 255, 0.08)' }, ticks: { color: 'white' } },
+                y: { grid: { color: 'rgba(255, 255, 255, 0.08)' }, ticks: { color: 'white', stepSize: 1 } }
+            },
+            plugins: {
+                legend: {
+                    labels: { color: 'white', font: { family: 'Poppins' } }
+                }
+            }
+        }
+    });
+}
+
+loadAdminStats();
+</script>
+
+</body>
+</html>

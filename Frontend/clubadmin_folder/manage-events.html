@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Manage Events | AURIX</title>
+
+<link rel="stylesheet" href="../CSS/style.css">
+<script src="https://kit.fontawesome.com/64d58efce2.js"></script>
+</head>
+
+<body class="dashboard-page">
+
+<div id="particles-js"></div>
+
+<!-- ================= TOPBAR ================= -->
+<div class="topbar">
+    <div class="nav-left">
+        <i class="fas fa-bars menu-icon" onclick="toggleSidebar()"></i>
+        <h2 class="logo">AURIX</h2>
+    </div>
+
+    <div class="menu">
+        <a href="clubadmin_dashboard.html" class="nav-btn">Dashboard</a>
+        <a href="create-event.html" class="nav-btn">Create Event</a>
+        <a href="manage-events.html" class="active">Manage Events</a>
+        <a href="registrations.html" class="nav-btn">Registrations</a>
+    </div>
+
+    <i class="fas fa-user profile-icon" onclick="toggleSidebar()"></i>
+</div>
+
+<!-- ================= SIDEBAR ================= -->
+<div class="sidebar" id="sidebar">
+    <h3>Club Admin</h3>
+
+    <a href="clubadmin_dashboard.html">📊 Dashboard</a>
+    <a href="create-event.html">➕ Create Event</a>
+    <a href="manage-events.html">📅 Manage Events</a>
+    <a href="registrations.html">👥 Registrations</a>
+
+    <hr>
+    <a onclick="logout()">🚪 Logout</a>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<!-- ================= MAIN ================= -->
+<div class="main-content">
+
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h2 class="section-title">📋 Your Events</h2>
+
+        <a href="create-event.html" class="btn nav-btn">
+            ➕ Create Event
+        </a>
+    </div>
+
+    <!-- FILTER -->
+    <div style="margin:15px 0;">
+        <select id="filterStatus" onchange="filterAndRender()">
+            <option value="all">All Statuses</option>
+            <option value="published">Live / Published</option>
+            <option value="pending">Pending Approval</option>
+            <option value="draft">Draft</option>
+            <option value="completed">Completed</option>
+            <option value="rejected">Rejected</option>
+        </select>
+    </div>
+
+    <!-- LIVE EVENTS -->
+    <h3 class="section-title" id="liveTitle">🔴 Live Events</h3>
+    <div class="event-grid" id="liveEvents"></div>
+
+    <!-- PENDING APPROVAL -->
+    <h3 class="section-title" id="pendingTitle">⏳ Pending Approval</h3>
+    <div class="event-grid" id="pendingEvents"></div>
+
+    <!-- DRAFT EVENTS -->
+    <h3 class="section-title" id="draftTitle">📝 Draft Events</h3>
+    <div class="event-grid" id="draftEvents"></div>
+
+    <!-- OTHER EVENTS -->
+    <h3 class="section-title" id="otherTitle">📁 Archive / Other Events</h3>
+    <div class="event-grid" id="otherEvents"></div>
+
+</div>
+
+<!-- ================= FOOTER ================= -->
+<footer class="footer">
+    <div class="footer-container">
+        <div>
+            <h2>AURIX</h2>
+            <p>Smart College Event Platform</p>
+        </div>
+
+        <div>
+            <h4>Admin Panel</h4>
+            <p>Dashboard</p>
+            <p>Events</p>
+            <p>Registrations</p>
+        </div>
+
+        <div>
+            <h4>Contact</h4>
+            <p>aurix@college.com</p>
+            <p>+91 9876543210</p>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        © 2026 AURIX • All rights reserved
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
+<script src="../JS/app.js"></script>
+
+<!-- 🔥 SCRIPT -->
+<script>
+const user = JSON.parse(localStorage.getItem("user"));
+const token = localStorage.getItem("token");
+
+if (!user || (user.role !== 'club_admin' && user.role !== 'admin')) {
+    window.location.href = "../login.html";
+}
+
+let allEventsList = [];
+let club = null;
+
+async function init() {
+    try {
+        const clubRes = await fetch("http://localhost:5000/api/my-club", {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        if (!clubRes.ok) throw new Error("Failed to load club details");
+        club = await clubRes.json();
+        
+        await loadEvents();
+    } catch (err) {
+        console.error(err);
+        alert("Failed to initialize: " + err.message);
+    }
+}
+
+async function loadEvents() {
+    try {
+        if (!club || !club.id) return;
+        const res = await fetch(`http://localhost:5000/api/clubs/${club.id}/events`, {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+
+        if (!res.ok) throw new Error("Failed to fetch events");
+
+        allEventsList = await res.json();
+        filterAndRender();
+
+    } catch (err) {
+        console.error(err);
+        alert("Failed to load events ❌");
+    }
+}
+
+function filterAndRender() {
+    const liveContainer = document.getElementById("liveEvents");
+    const pendingContainer = document.getElementById("pendingEvents");
+    const draftContainer = document.getElementById("draftEvents");
+    const otherContainer = document.getElementById("otherEvents");
+
+    const filter = document.getElementById("filterStatus").value;
+
+    liveContainer.innerHTML = "";
+    pendingContainer.innerHTML = "";
+    draftContainer.innerHTML = "";
+    otherContainer.innerHTML = "";
+
+    let hasLive = false, hasPending = false, hasDraft = false, hasOther = false;
+
+    allEventsList.forEach(event => {
+        const id = event.id;
+        const status = event.status;
+
+        // Apply drop down filter
+        if (filter !== "all" && filter !== status) return;
+
+        const date = new Date(event.event_date).toLocaleDateString("en-GB", {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        let statusBadge = "";
+        let actionButtons = `
+            <a href="create-event.html?id=${id}" class="btn">
+                Edit ✏️
+            </a>
+            <button class="btn btn-danger" onclick="deleteEvent(${id})">
+                Delete 🗑️
+            </button>
+        `;
+
+        if (status === "published") {
+            statusBadge = `<span class="live-badge"><span class="live-dot"></span> LIVE</span>`;
+            actionButtons += `
+                <button class="btn" onclick="updateStatus(${id}, 'completed')">
+                    Complete ✅
+                </button>
+            `;
+        } else if (status === "pending") {
+            statusBadge = `<span class="pending-badge" style="background: rgba(250, 204, 21, 0.2); color: #facc15; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid rgba(250, 204, 21, 0.4);">⏳ PENDING</span>`;
+        } else if (status === "draft") {
+            statusBadge = `<span style="background: rgba(156, 163, 175, 0.2); color: #d1d5db; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid rgba(156, 163, 175, 0.4);">📝 DRAFT</span>`;
+            actionButtons += `
+                <button class="btn" onclick="updateStatus(${id}, 'published')">
+                    Submit for Approval 📤
+                </button>
+            `;
+        } else if (status === "completed") {
+            statusBadge = `<span style="background: rgba(74, 222, 128, 0.2); color: #4ade80; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid rgba(74, 222, 128, 0.4);">✅ COMPLETED</span>`;
+        } else if (status === "rejected") {
+            statusBadge = `<span style="background: rgba(239, 68, 68, 0.2); color: #f87171; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; border: 1px solid rgba(239, 68, 68, 0.4);">❌ REJECTED</span>`;
+            actionButtons += `
+                <button class="btn" onclick="updateStatus(${id}, 'published')">
+                    Resubmit 📤
+                </button>
+            `;
+        }
+
+        const card = `
+        <div class="event-card" style="width: 320px;">
+            <div class="card-content">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    ${statusBadge}
+                    <span style="font-size:12px; opacity:0.6;">${event.category || 'General'}</span>
+                </div>
+
+                <h3 style="margin-bottom:8px;">${event.title}</h3>
+                <p style="font-size:13px; margin-bottom:5px;"><i class="fas fa-calendar-alt"></i> ${date}</p>
+                <p style="font-size:13px; margin-bottom:12px;"><i class="fas fa-map-marker-alt"></i> ${event.venue || 'Campus Hall'}</p>
+                <p class="desc" style="font-size: 14px; opacity: 0.8; max-height: 80px; overflow-y: auto; margin-bottom: 15px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;">${event.description || 'No description provided.'}</p>
+
+                <div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px;">
+                    ${actionButtons}
+                </div>
+            </div>
+        </div>
+        `;
+
+        if (status === "published") {
+            liveContainer.innerHTML += card;
+            hasLive = true;
+        } else if (status === "pending") {
+            pendingContainer.innerHTML += card;
+            hasPending = true;
+        } else if (status === "draft") {
+            draftContainer.innerHTML += card;
+            hasDraft = true;
+        } else {
+            otherContainer.innerHTML += card;
+            hasOther = true;
+        }
+    });
+
+    // Handle empty views
+    if (!hasLive) liveContainer.innerHTML = "<p style='grid-column: 1/-1; opacity:0.5; padding:10px;'>No live/published events found.</p>";
+    if (!hasPending) pendingContainer.innerHTML = "<p style='grid-column: 1/-1; opacity:0.5; padding:10px;'>No events awaiting approval.</p>";
+    if (!hasDraft) draftContainer.innerHTML = "<p style='grid-column: 1/-1; opacity:0.5; padding:10px;'>No draft events.</p>";
+    if (!hasOther) otherContainer.innerHTML = "<p style='grid-column: 1/-1; opacity:0.5; padding:10px;'>No completed or archived events.</p>";
+}
+
+async function deleteEvent(id) {
+    if (!confirm("Are you sure you want to delete this event? This will remove all student registrations for this event as well.")) return;
+
+    try {
+        const res = await fetch(`http://localhost:5000/api/events/${id}`, {
+            method: "DELETE",
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+
+        if (!res.ok) throw new Error();
+
+        alert("Event Deleted 🗑️");
+        loadEvents();
+
+    } catch {
+        alert("Delete failed ❌");
+    }
+}
+
+async function updateStatus(id, newStatus) {
+    try {
+        // Fetch current event details first
+        const event = allEventsList.find(e => e.id === id);
+        if (!event) return;
+
+        // If a club admin publishes, it goes to pending.
+        const res = await fetch(`http://localhost:5000/api/events/${id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                title: event.title,
+                description: event.description,
+                category: event.category,
+                event_date: event.event_date.split('T')[0] + 'T' + event.event_date.split('T')[1].substring(0, 5),
+                venue: event.venue,
+                status: newStatus
+            })
+        });
+
+        if (!res.ok) throw new Error();
+
+        if (newStatus === 'published') {
+            alert("Submitted for Admin Approval! ⏳");
+        } else {
+            alert("Status Updated Successfully! ✅");
+        }
+        loadEvents();
+
+    } catch (err) {
+        console.error(err);
+        alert("Update failed ❌");
+    }
+}
+
+init();
+</script>
+
+</body>
+</html>

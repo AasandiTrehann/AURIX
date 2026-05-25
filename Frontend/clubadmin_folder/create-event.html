@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Create Event | AURIX</title>
+
+<link rel="stylesheet" href="../CSS/style.css">
+<script src="https://kit.fontawesome.com/64d58efce2.js"></script>
+</head>
+
+<body class="dashboard-page">
+
+<!-- PARTICLES -->
+<div id="particles-js"></div>
+
+<!-- ================= TOPBAR ================= -->
+<div class="topbar">
+
+    <div class="nav-left">
+        <i class="fas fa-bars menu-icon" onclick="toggleSidebar()"></i>
+        <h2 class="logo">AURIX</h2>
+    </div>
+
+    <div class="menu">
+        <a href="clubadmin_dashboard.html" class="nav-btn" onclick="handleNav(event, this)">Dashboard</a>
+        <a href="create-event.html" class="active">Create Event</a>
+        <a href="manage-events.html" class="nav-btn" onclick="handleNav(event, this)">Manage Events</a>
+        <a href="registrations.html" class="nav-btn" onclick="handleNav(event, this)">Registrations</a>
+        <a href="announcements.html" class="nav-btn" onclick="handleNav(event, this)">Announcements</a>
+    </div>
+
+    <i class="fas fa-user profile-icon" onclick="toggleSidebar()"></i>
+
+</div>
+
+<!-- ================= SIDEBAR ================= -->
+<div class="sidebar" id="sidebar">
+
+    <h3>Club Admin</h3>
+
+    <a href="clubadmin_dashboard.html">📊 Dashboard</a>
+    <a href="create-event.html">➕ Create Event</a>
+    <a href="manage-events.html">📅 Manage Events</a>
+    <a href="registrations.html">👥 Registrations</a>
+    <a href="announcements.html">📢 Announcements</a>
+
+    <hr>
+
+    <a onclick="logout()">🚪 Logout</a>
+
+</div>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<!-- ================= MAIN ================= -->
+<div class="main-content">
+
+    <!-- 🔙 BACK -->
+    <a href="manage-events.html" class="btn nav-btn">
+        ← Back to Manage Events
+    </a>
+
+    <div class="form-card" style="max-width:650px; margin-top:20px;">
+
+        <h2 id="formTitle">Create New Event</h2>
+
+        <!-- FORM -->
+        <form id="createEventForm">
+
+            <label class="form-label" style="display:block; margin-bottom:5px; font-weight:bold; font-size:14px; opacity:0.8;">Event Name</label>
+            <input type="text" name="event_name" placeholder="Event Name" required style="width:100%; margin-bottom:15px;">
+
+            <div style="display:flex; gap:15px; margin-bottom:15px;">
+                <div style="flex:1;">
+                    <label class="form-label" style="display:block; margin-bottom:5px; font-weight:bold; font-size:14px; opacity:0.8;">Event Date</label>
+                    <input type="date" name="event_date" required style="width:100%; margin-bottom:0;">
+                </div>
+                <div style="flex:1;">
+                    <label class="form-label" style="display:block; margin-bottom:5px; font-weight:bold; font-size:14px; opacity:0.8;">Event Time</label>
+                    <input type="time" name="event_time" required style="width:100%; margin-bottom:0;">
+                </div>
+            </div>
+
+            <div style="display:flex; gap:15px; margin-bottom:15px;">
+                <div style="flex:1;">
+                    <label class="form-label" style="display:block; margin-bottom:5px; font-weight:bold; font-size:14px; opacity:0.8;">Category</label>
+                    <select name="category" style="width:100%; margin-bottom:0; background:rgba(255,255,255,0.1); color:white; border-radius:10px; border:1px solid rgba(255,255,255,0.15); padding:14px;">
+                        <option value="General">General</option>
+                        <option value="Workshop">Workshop</option>
+                        <option value="Hackathon">Hackathon</option>
+                        <option value="Cultural">Cultural</option>
+                        <option value="Seminar">Seminar</option>
+                        <option value="Guest Lecture">Guest Lecture</option>
+                        <option value="Competition">Competition</option>
+                    </select>
+                </div>
+                <div style="flex:1;">
+                    <label class="form-label" style="display:block; margin-bottom:5px; font-weight:bold; font-size:14px; opacity:0.8;">Venue</label>
+                    <select name="venue" style="width:100%; margin-bottom:0; background:rgba(255,255,255,0.1); color:white; border-radius:10px; border:1px solid rgba(255,255,255,0.15); padding:14px;">
+                        <option value="Campus Hall">Campus Hall</option>
+                        <option value="Main Auditorium">Main Auditorium</option>
+                        <option value="Seminar Hall 1">Seminar Hall 1</option>
+                        <option value="Coding Lab">Coding Lab</option>
+                        <option value="Placement Cell">Placement Cell</option>
+                        <option value="Campus Grounds">Campus Grounds</option>
+                    </select>
+                </div>
+            </div>
+
+            <label class="form-label" style="display:block; margin-bottom:5px; font-weight:bold; font-size:14px; opacity:0.8;">Club Name (Read-Only)</label>
+            <input type="text" name="club_name" placeholder="Loading Club Name..." readonly style="width:100%; margin-bottom:15px; background:rgba(255,255,255,0.05); color:#9ca3af; cursor:not-allowed;">
+
+            <label class="form-label" style="display:block; margin-bottom:5px; font-weight:bold; font-size:14px; opacity:0.8;">Description</label>
+            <textarea name="description" placeholder="Provide a detailed description of the event, guidelines, and benefits..." required style="width:100%; height:120px; margin-bottom:15px;"></textarea>
+
+            <!-- STATUS -->
+            <label class="form-label" style="display:block; margin-bottom:5px; font-weight:bold; font-size:14px; opacity:0.8;">Status</label>
+            <select name="status" id="eventStatus" style="width:100%; margin-bottom:15px; background:rgba(255,255,255,0.1); color:white; border-radius:10px; border:1px solid rgba(255,255,255,0.15); padding:14px;">
+                <option value="draft">Save as Draft</option>
+                <option value="published">Publish (Requires Approval)</option>
+            </select>
+
+            <!-- BUTTONS -->
+            <div style="display:flex; gap:15px; margin-top:20px;">
+                <button type="submit" class="btn" id="submitBtn">
+                    Create Event
+                </button>
+                <button type="reset" class="btn btn-secondary" id="resetBtn">
+                    Reset
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<!-- ================= FOOTER ================= -->
+<footer class="footer">
+
+    <div class="footer-container">
+
+        <div>
+            <h2>AURIX</h2>
+            <p>Smart College Event Platform</p>
+        </div>
+
+        <div>
+            <h4>Admin Panel</h4>
+            <p>Dashboard</p>
+            <p>Events</p>
+            <p>Registrations</p>
+        </div>
+
+        <div>
+            <h4>Contact</h4>
+            <p>aurix@college.com</p>
+            <p>+91 9876543210</p>
+        </div>
+
+    </div>
+
+    <div class="footer-bottom">
+        © 2026 AURIX • All rights reserved
+    </div>
+
+</footer>
+
+<!-- SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
+<script src="../JS/app.js"></script>
+<script>
+const user = JSON.parse(localStorage.getItem("user"));
+const token = localStorage.getItem("token");
+
+if (!user || (user.role !== 'club_admin' && user.role !== 'admin')) {
+    window.location.href = "../login.html";
+}
+
+const urlParams = new URLSearchParams(window.location.search);
+const editEventId = urlParams.get('id');
+
+let club = null;
+
+async function initPage() {
+    try {
+        // 1. Fetch Club Info first
+        const clubRes = await fetch("http://localhost:5000/api/my-club", {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        club = await clubRes.json();
+
+        if (!club.id) {
+            alert("This user is not associated with any club.");
+            window.location.href = "clubadmin_dashboard.html";
+            return;
+        }
+
+        const form = document.getElementById("createEventForm");
+        form.club_name.value = club.name;
+
+        // 2. If editing, load event details
+        if (editEventId) {
+            document.getElementById("formTitle").innerText = "Edit Event Details";
+            document.getElementById("submitBtn").innerText = "Update Event";
+            document.getElementById("resetBtn").style.display = "none";
+
+            // Add other statuses to option list
+            const statusSelect = document.getElementById("eventStatus");
+            statusSelect.innerHTML = `
+                <option value="draft">Save as Draft</option>
+                <option value="published">Publish (Requires Approval)</option>
+                <option value="pending">Awaiting Approval</option>
+                <option value="completed">Completed</option>
+                <option value="rejected">Rejected</option>
+            `;
+
+            const eventsRes = await fetch(`http://localhost:5000/api/clubs/${club.id}/events`, {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            const events = await eventsRes.json();
+            const event = events.find(e => e.id == editEventId);
+
+            if (event) {
+                form.event_name.value = event.title;
+                form.description.value = event.description;
+                if (event.category) form.category.value = event.category;
+                if (event.venue) form.venue.value = event.venue;
+                if (event.status) form.status.value = event.status;
+
+                // Split datetime (YYYY-MM-DDTHH:MM:SS.000Z)
+                if (event.event_date) {
+                    const dtParts = event.event_date.split('T');
+                    form.event_date.value = dtParts[0];
+                    if (dtParts[1]) {
+                        form.event_time.value = dtParts[1].substring(0, 5);
+                    }
+                }
+            } else {
+                alert("Event not found or unauthorized to edit.");
+                window.location.href = "manage-events.html";
+            }
+        }
+    } catch (err) {
+        console.error("Init Page Error:", err);
+        alert("Server error while initializing page ❌");
+    }
+}
+
+// 🔥 HANDLE FORM SUBMIT
+document.getElementById("createEventForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const form = e.target;
+
+    const title = form.event_name.value;
+    const date = form.event_date.value;
+    const time = form.event_time.value;
+    const category = form.category.value;
+    const venue = form.venue.value;
+    const description = form.description.value;
+    const status = form.status.value;
+
+    // 🔥 combine date + time
+    const event_date = `${date}T${time}:00`;
+
+    try {
+        let url = "http://localhost:5000/api/events";
+        let method = "POST";
+
+        if (editEventId) {
+            url = `http://localhost:5000/api/events/${editEventId}`;
+            method = "PUT";
+        }
+
+        const payload = {
+            title: title,
+            description: description,
+            category: category,
+            event_date: event_date,
+            venue: venue,
+            status: status
+        };
+
+        if (!editEventId) {
+            payload.club_id = club.id;
+        }
+
+        const res = await fetch(url, {
+            method: method,
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+            alert(editEventId ? "Event Updated Successfully ✅" : "Event Created Successfully ✅");
+            if (editEventId) {
+                window.location.href = "manage-events.html";
+            } else {
+                form.reset();
+                form.club_name.value = club.name; // Keep club name populated
+            }
+        } else {
+            alert("Error: " + data.message);
+        }
+
+    } catch (err) {
+        console.log(err);
+        alert("Server error ❌");
+    }
+});
+
+initPage();
+</script>
+</body>
+</html>

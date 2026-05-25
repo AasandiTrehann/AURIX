@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - AURIX</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="CSS/style.css">
+</head>
+
+<body class="auth-page">
+
+<div id="particles-js"></div>
+
+<div class="background-orbit">
+    <div class="orbit orbit-big"><div class="dot"></div></div>
+    <div class="orbit orbit-mid"><div class="dot"></div></div>
+    <div class="orbit orbit-small"><div class="dot"></div></div>
+</div>
+
+<!-- NAV -->
+<div class="nav-wrapper">
+    <nav class="glass-nav">
+        <h2>AURIX</h2>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="#">Events</a>
+            <a href="#">Clubs</a>
+        </div>
+    </nav>
+</div>
+
+<!-- LOGIN -->
+<div class="auth-wrapper">
+
+    <div class="auth-big-card">
+
+        <div class="auth-left">
+            <h1>Welcome Back to <span>AURIX</span></h1>
+            <p>Login and continue exploring 🚀</p>
+        </div>
+
+        <div class="auth-right">
+
+            <h2>Login</h2>
+
+            <form id="loginForm">
+
+                <input type="email" id="email" placeholder="Email" required>
+                <input type="password" id="password" placeholder="Password" required>
+
+                <button id="loginBtn" type="submit">Login</button>
+
+            </form>
+
+            <p id="errorMsg" style="color:red;"></p>
+
+            <div class="auth-switch">
+                <p>Don't have an account? <a href="register.html">Register</a></p>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
+
+<script>
+document.getElementById("loginForm").addEventListener("submit", async function(e) {
+
+    e.preventDefault();
+
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    try {
+        const res = await fetch("http://localhost:5000/api/auth/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ email, password })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+
+            // store user and token
+            localStorage.setItem("user", JSON.stringify(data.user));
+            localStorage.setItem("token", data.token);
+
+            // role-based redirect
+            if (data.user.role === "student") {
+                window.location.href = "student_folder/student-dashboard.html";
+            }
+            else if (data.user.role === "club_admin") {
+                window.location.href = "clubadmin_folder/clubadmin_dashboard.html";
+            }
+            else if (data.user.role === "admin") {
+                window.location.href = "systemadmin_folder/admin-dashboard.html";
+            }
+
+        } else {
+            document.getElementById("errorMsg").innerText = data.message;
+        }
+
+    } catch (err) {
+        console.log(err);
+        document.getElementById("errorMsg").innerText = "Server error";
+    }
+
+});
+</script>
+
+<script src="JS/app.js"></script>
+
+</body>
+</html>

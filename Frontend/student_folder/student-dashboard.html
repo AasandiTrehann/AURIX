@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AURIX Dashboard</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../CSS/style.css">
+    <script src="https://kit.fontawesome.com/64d58efce2.js"></script>
+
+    <style>
+    /* Modal Backdrop */
+    .modal {
+        display: none; 
+        position: fixed; 
+        z-index: 2000; 
+        left: 0;
+        top: 0;
+        width: 100%; 
+        height: 100%; 
+        overflow: auto; 
+        background-color: rgba(0,0,0,0.6);
+        backdrop-filter: blur(8px);
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* Modal Content Card */
+    .modal-content {
+        background: rgba(15, 15, 40, 0.85);
+        backdrop-filter: blur(25px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+        margin: auto;
+        padding: 30px;
+        border-radius: 25px;
+        width: 90%;
+        max-width: 500px;
+        position: relative;
+        color: white;
+        text-align: left;
+    }
+
+    .modal-content h2 {
+        margin-bottom: 20px;
+        font-size: 24px;
+    }
+
+    .modal-content input, .modal-content textarea {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 15px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .modal-content input::placeholder, .modal-content textarea::placeholder {
+        color: #cbd5f5;
+        opacity: 0.8;
+    }
+
+    .modal-content .close-btn {
+        position: absolute;
+        top: 15px;
+        right: 20px;
+        font-size: 24px;
+        cursor: pointer;
+        color: white;
+        opacity: 0.7;
+        transition: 0.3s;
+    }
+
+    .modal-content .close-btn:hover {
+        opacity: 1;
+    }
+    </style>
+</head>
+
+<body class="dashboard-page">
+
+<!-- 🔐 AUTH -->
+<script>
+const user = JSON.parse(localStorage.getItem("user"));
+if (!user) {
+    window.location.href = "../login.html";
+}
+</script>
+
+<!-- BACKGROUND -->
+<div id="particles-js"></div>
+
+<!-- TOPBAR -->
+<header class="topbar">
+    <div class="nav-left">
+        <i class="fas fa-bars menu-icon" onclick="toggleSidebar()"></i>
+        <h2 class="logo">AURIX</h2>
+    </div>
+
+    <div class="menu">
+        <a href="student-dashboard.html" class="active">Home</a>
+        <a href="my_events.html">My Events</a>
+        <a href="club-page.html">Clubs</a>
+        <a href="#">Announcements</a>
+    </div>
+
+    <div class="right">
+        <h3 id="welcomeUser"></h3>
+        <input type="text" placeholder="Search..." class="search-bar">
+        <i class="fas fa-user-circle profile-icon" onclick="toggleSidebar()"></i>
+    </div>
+</header>
+
+<!-- SIDEBAR -->
+<div class="sidebar" id="sidebar">
+    <h3>Profile</h3>
+    <a href="student-dashboard.html">🏠 Home</a>
+    <a href="#">👤 My Profile</a>
+    <a href="#">📞 Contact Us</a>
+    <hr>
+    <a onclick="logout()">🚪 Logout</a>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<!-- MAIN -->
+<div class="main-content">
+
+    <!-- STATS -->
+    <div class="stats">
+        <div class="stat-card">
+            <h3 id="totalRegistered">0</h3>
+            <p>Registered</p>
+        </div>
+        <div class="stat-card">
+            <h3 id="totalLive">0</h3>
+            <p>Live</p>
+        </div>
+        <div class="stat-card">
+            <h3 id="totalUpcoming">0</h3>
+            <p>Upcoming</p>
+        </div>
+    </div>
+
+    <!-- LIVE -->
+    <h2 class="section-title">🔴 Live Events</h2>
+    <div class="event-grid" id="liveEvents"></div>
+
+    <!-- UPCOMING -->
+    <h2 class="section-title">🟢 Upcoming Events</h2>
+    <div class="event-grid" id="upcomingEvents"></div>
+
+    <!-- PAST -->
+    <h2 class="section-title">⚫ Past Events</h2>
+    <div class="event-grid" id="pastEvents"></div>
+
+</div>
+
+<!-- JOIN CLUB MODAL -->
+<div id="joinModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <h2>Join Club Request</h2>
+        <form id="joinClubForm">
+            <input type="text" id="joinName" placeholder="Full Name" required>
+            <input type="text" id="joinCourse" placeholder="Course Name" required>
+            <input type="text" id="joinNumber" placeholder="Roll Number / Phone Number" required>
+            <input type="email" id="joinEmail" placeholder="Email Address" required>
+            <textarea id="joinReason" placeholder="Reason for joining" rows="4" required></textarea>
+            <button type="submit" class="btn" style="width: 100%;">Submit Application</button>
+        </form>
+    </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+    <div class="footer-container">
+        <div>
+            <h2>AURIX</h2>
+            <p>Smart College Event Platform</p>
+        </div>
+        <div>
+            <h4>Explore</h4>
+            <p>Home</p>
+            <p>Events</p>
+            <p>Clubs</p>
+        </div>
+        <div>
+            <h4>Contact</h4>
+            <p>aurix@college.com</p>
+            <p>+91 9876543210</p>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        © 2026 AURIX • All rights reserved
+    </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
+<script src="../JS/app.js"></script>
+
+<!-- USER NAME -->
+<script>
+document.getElementById("welcomeUser").innerText = "👋 " + user.name;
+</script>
+
+<!-- 🔥 FINAL WORKING LOGIC -->
+<script>
+let registeredEvents = [];
+const token = localStorage.getItem("token");
+
+async function fetchRegisteredEvents() {
+    try {
+        const res = await fetch("http://localhost:5000/api/users/me/events", {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const data = await res.json();
+        registeredEvents = data.map(e => e.id);
+    } catch (err) {
+        console.error("Error fetching registered events:", err);
+    }
+}
+
+async function loadEvents() {
+    try {
+        await fetchRegisteredEvents();
+
+        const res = await fetch("http://localhost:5000/api/events");
+        const events = await res.json();
+
+        const liveContainer = document.getElementById("liveEvents");
+        const upcomingContainer = document.getElementById("upcomingEvents");
+        const pastContainer = document.getElementById("pastEvents");
+
+        let liveCount = 0;
+        let upcomingCount = 0;
+
+        liveContainer.innerHTML = "";
+        upcomingContainer.innerHTML = "";
+        pastContainer.innerHTML = "";
+
+        events.forEach(event => {
+            const eventId = event.id;
+
+            if (event.status === "published" || event.status === "live") {
+                // Determine display status based on date
+                const eventDate = new Date(event.event_date);
+                const now = new Date();
+                let displayStatus = event.status;
+                
+                if (eventDate < now) displayStatus = "completed";
+                else if (eventDate.toDateString() === now.toDateString()) displayStatus = "live";
+                else displayStatus = "upcoming";
+
+                if (displayStatus === "live") liveCount++;
+                if (displayStatus === "upcoming") upcomingCount++;
+
+                const isRegistered = registeredEvents.includes(eventId);
+
+                const buttonHTML = isRegistered
+                    ? `<button class="btn btn-danger" onclick="cancelRegistration(${eventId})">
+                        Cancel Registration
+                      </button>`
+                    : `<button class="btn"
+                        ${displayStatus === "completed" ? "disabled" : ""}
+                        onclick="registerEvent(${eventId}, ${event.club_id})">
+                        ${displayStatus === "live"
+                            ? "Join Now"
+                            : displayStatus === "completed"
+                            ? "Completed"
+                            : "Register"}
+                      </button>`;
+
+                const card = `
+                <div class="event-card">
+                    <img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d">
+                    <div class="card-content">
+
+                        ${displayStatus === "live" ? `
+                        <span class="live-badge">
+                            <span class="live-dot"></span> LIVE
+                        </span>` : ""}
+
+                        <h3>${event.title}</h3>
+                        <p>${new Date(event.event_date).toLocaleString()} • ${event.club_name || 'Club'}</p>
+                        <p class="desc">${event.description}</p>
+
+                        ${buttonHTML}
+
+                    </div>
+                </div>
+                `;
+
+                if (displayStatus === "live") {
+                    liveContainer.innerHTML += card;
+                }
+                else if (displayStatus === "upcoming") {
+                    upcomingContainer.innerHTML += card;
+                }
+                else {
+                    pastContainer.innerHTML += card;
+                }
+            }
+        });
+
+        // ✅ FINAL STATS
+        document.getElementById("totalLive").innerText = liveCount;
+        document.getElementById("totalUpcoming").innerText = upcomingCount;
+        document.getElementById("totalRegistered").innerText = registeredEvents.length;
+
+    } catch (err) {
+        console.log("Error loading events:", err);
+    }
+}
+
+let activeClubIdForJoin = null;
+
+function openModal(clubId) {
+    activeClubIdForJoin = clubId;
+    document.getElementById("joinModal").style.display = "flex";
+}
+
+function closeModal() {
+    document.getElementById("joinModal").style.display = "none";
+}
+
+// Submit Join Club Form
+document.getElementById("joinClubForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const name = document.getElementById("joinName").value;
+    const course = document.getElementById("joinCourse").value;
+    const roll_number = document.getElementById("joinNumber").value;
+    const email = document.getElementById("joinEmail").value;
+    const reason = document.getElementById("joinReason").value;
+
+    try {
+        const res = await fetch(`http://localhost:5000/api/clubs/${activeClubIdForJoin}/join`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({ name, course, roll_number, email, reason })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            alert("Application submitted successfully! Waiting for admin approval.");
+            closeModal();
+            loadEvents();
+        } else {
+            alert(data.message || "Failed to submit request.");
+        }
+    } catch (err) {
+        console.error(err);
+    }
+});
+
+async function registerEvent(eventId, clubId) {
+    try {
+        const res = await fetch("http://localhost:5000/api/registrations", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                event_id: eventId
+            })
+        });
+
+        const data = await res.json();
+        
+        if (res.status === 403 && data.message === "NOT_MEMBER") {
+            alert("You must be an approved member of this club to join its events! Please submit a join request.");
+            openModal(clubId);
+        } else if (res.ok) {
+            alert("Registered successfully ✅");
+            loadEvents();
+        } else {
+            alert(data.message || "Registration failed");
+        }
+
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+async function cancelRegistration(eventId) {
+    if (!confirm("Are you sure you want to cancel?")) return;
+    try {
+        const res = await fetch(`http://localhost:5000/api/registrations/${eventId}`, {
+            method: "DELETE",
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+
+        const data = await res.json();
+        alert(data.message);
+
+        loadEvents();
+
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+loadEvents();
+</script>
+
+</body>
+</html>

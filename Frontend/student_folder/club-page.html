@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Clubs | AURIX</title>
+
+<link rel="stylesheet" href="../CSS/style.css">
+<script src="https://kit.fontawesome.com/64d58efce2.js"></script>
+</head>
+
+<body class="dashboard-page">
+
+<!-- PARTICLES -->
+<div id="particles-js"></div>
+
+<!-- ================= TOPBAR ================= -->
+<div class="topbar">
+
+    <div class="nav-left">
+        <i class="fas fa-bars menu-icon" onclick="toggleSidebar()"></i>
+        <h2 class="logo">AURIX</h2>
+    </div>
+
+    <div class="menu">
+        <a href="student-dashboard.html" class="nav-btn" onclick="handleNav(event, this)">Home</a>
+        <a href="my_events.html" class="nav-btn" onclick="handleNav(event, this)">My Events</a>
+        <a href="club-page.html" class="active">Clubs</a>
+        <a href="announcements.html" class="nav-btn" onclick="handleNav(event, this)">Announcements</a>
+    </div>
+
+    <div class="nav-right">
+        <input type="text" class="search-bar" placeholder="Search clubs...">
+        <i class="fas fa-user profile-icon" onclick="toggleSidebar()"></i>
+    </div>
+
+</div>
+
+<!-- ================= MAIN ================= -->
+<div class="main-content">
+
+    <h2 class="section-title">🏫 All Clubs</h2>
+
+    <div class="event-grid" id="clubsContainer">
+        <!-- Clubs will be injected dynamically -->
+    </div>
+
+</div>
+
+<!-- ================= FOOTER ================= -->
+<footer class="footer">
+
+    <div class="footer-container">
+
+        <div>
+            <h2>AURIX</h2>
+            <p>Smart College Event Platform</p>
+        </div>
+
+        <div>
+            <h4>Explore</h4>
+            <p>Home</p>
+            <p>Events</p>
+            <p>Clubs</p>
+        </div>
+
+        <div>
+            <h4>Contact</h4>
+            <p>aurix@college.com</p>
+            <p>+91 9876543210</p>
+        </div>
+
+    </div>
+
+    <div class="footer-bottom">
+        © 2026 AURIX • All rights reserved
+    </div>
+
+</footer>
+
+<!-- SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
+<script src="../JS/app.js"></script>
+
+<script>
+const images = {
+    "Cultural Club": "https://images.unsplash.com/photo-1514525253161-7a46d19cd819",
+    "Coding Club": "https://images.unsplash.com/photo-1519389950473-47ba0277781c",
+    "Entrepreneurship Club": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab",
+    "Technical Club": "https://images.unsplash.com/photo-1485827404703-89b55fcc595e",
+    "Placement Club": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40"
+};
+
+async function loadClubs() {
+    try {
+        const res = await fetch("http://localhost:5000/api/clubs");
+        const clubs = await res.json();
+        const container = document.getElementById("clubsContainer");
+        container.innerHTML = "";
+
+        clubs.forEach(club => {
+            const imgUrl = images[club.name] || "https://images.unsplash.com/photo-1519389950473-47ba0277781c";
+            
+            container.innerHTML += `
+                <div class="event-card">
+                    <img src="${imgUrl}" alt="${club.name}">
+                    <div class="card-content">
+                        <h3>${club.name}</h3>
+                        <p>Managed by ${club.admin_name || 'Admin'}</p>
+                        <p class="desc">${club.description.substring(0, 120)}...</p>
+
+                        <a href="club-profile.html?id=${club.id}" class="btn nav-btn" onclick="handleNav(event, this)">
+                            View Club
+                        </a>
+                    </div>
+                </div>
+            `;
+        });
+    } catch (err) {
+        console.error(err);
+    }
+}
+loadClubs();
+</script>
+
+</body>
+</html>

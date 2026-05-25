@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Club Profile | AURIX</title>
+
+<link rel="stylesheet" href="../CSS/style.css">
+<script src="https://kit.fontawesome.com/64d58efce2.js"></script>
+
+<style>
+/* Modal Backdrop */
+.modal {
+    display: none; 
+    position: fixed; 
+    z-index: 2000; 
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    overflow: auto; 
+    background-color: rgba(0,0,0,0.6);
+    backdrop-filter: blur(8px);
+    justify-content: center;
+    align-items: center;
+}
+
+/* Modal Content Card */
+.modal-content {
+    background: rgba(15, 15, 40, 0.85);
+    backdrop-filter: blur(25px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+    margin: auto;
+    padding: 30px;
+    border-radius: 25px;
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+    color: white;
+}
+
+.modal-content h2 {
+    margin-bottom: 20px;
+    font-size: 24px;
+}
+
+.modal-content input, .modal-content textarea {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-family: 'Poppins', sans-serif;
+}
+
+.modal-content input::placeholder, .modal-content textarea::placeholder {
+    color: #cbd5f5;
+    opacity: 0.8;
+}
+
+.modal-content .close-btn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 24px;
+    cursor: pointer;
+    color: white;
+    opacity: 0.7;
+    transition: 0.3s;
+}
+
+.modal-content .close-btn:hover {
+    opacity: 1;
+}
+</style>
+</head>
+
+<body class="dashboard-page">
+
+<!-- PARTICLES -->
+<div id="particles-js"></div>
+
+<!-- ================= TOPBAR ================= -->
+<div class="topbar">
+
+    <div class="nav-left">
+        <i class="fas fa-bars menu-icon" onclick="toggleSidebar()"></i>
+        <h2 class="logo">AURIX</h2>
+    </div>
+
+    <div class="menu">
+        <a href="student-dashboard.html" class="nav-btn" onclick="handleNav(event, this)">Home</a>
+        <a href="my_events.html" class="nav-btn" onclick="handleNav(event, this)">My Events</a>
+        <a href="club-page.html" class="active">Clubs</a>
+        <a href="announcements.html" class="nav-btn" onclick="handleNav(event, this)">Announcements</a>
+    </div>
+
+    <div class="nav-right">
+        <input type="text" class="search-bar" placeholder="Search...">
+        <i class="fas fa-user profile-icon" onclick="toggleSidebar()"></i>
+    </div>
+
+</div>
+
+<!-- ================= MAIN ================= -->
+<div class="main-content">
+
+    <!-- 🔙 BACK -->
+    <a href="club-page.html" class="btn nav-btn" onclick="handleNav(event, this)">
+        ← Back to Clubs
+    </a>
+
+    <!-- CLUB HEADER -->
+    <div class="club-header">
+        <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c">
+
+        <div class="club-info">
+            <h1 id="clubName">Loading...</h1>
+            <p id="clubMeta">Please wait...</p>
+
+            <button class="btn" id="joinBtn">Join Club</button>
+        </div>
+    </div>
+
+    <!-- ABOUT & ANNOUNCEMENTS SIDE BY SIDE -->
+    <div style="display: flex; gap: 30px; flex-wrap: wrap; margin-bottom: 40px; align-items: stretch; width: 100%;">
+        <!-- ABOUT -->
+        <div class="glass-card" style="flex: 1; min-width: 320px; margin-bottom: 0;">
+            <h3>About Club</h3>
+            <p id="clubDesc" style="line-height: 1.6; color: #cbd5f5;">
+                Loading description...
+            </p>
+        </div>
+
+        <!-- ANNOUNCEMENTS -->
+        <div class="glass-card" style="flex: 1; min-width: 320px; margin-bottom: 0;">
+            <h3>📢 Latest Announcements</h3>
+            <div id="clubAnnouncements" style="margin-top: 15px; max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; padding-right: 5px;">
+                <!-- Club specific announcements loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- EVENTS -->
+    <h2 class="section-title">📅 Club Events</h2>
+
+    <div class="event-grid" id="eventsContainer">
+        <!-- Event cards will load here dynamically -->
+    </div>
+
+</div>
+
+<!-- JOIN CLUB MODAL -->
+<div id="joinModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <h2>Join Club Request</h2>
+        <form id="joinClubForm">
+            <input type="text" id="joinName" placeholder="Full Name" required>
+            <input type="text" id="joinCourse" placeholder="Course Name" required>
+            <input type="text" id="joinNumber" placeholder="Roll Number / Phone Number" required>
+            <input type="email" id="joinEmail" placeholder="Email Address" required>
+            <textarea id="joinReason" placeholder="Reason for joining" rows="4" required></textarea>
+            <button type="submit" class="btn" style="width: 100%;">Submit Application</button>
+        </form>
+    </div>
+</div>
+
+<!-- ================= FOOTER ================= -->
+<footer class="footer">
+
+    <div class="footer-container">
+
+        <div>
+            <h2>AURIX</h2>
+            <p>Smart College Event Platform</p>
+        </div>
+
+        <div>
+            <h4>Explore</h4>
+            <p>Home</p>
+            <p>Events</p>
+            <p>Clubs</p>
+        </div>
+
+        <div>
+            <h4>Contact</h4>
+            <p>aurix@college.com</p>
+            <p>+91 9876543210</p>
+        </div>
+
+    </div>
+
+    <div class="footer-bottom">
+        © 2026 AURIX • All rights reserved
+    </div>
+
+</footer>
+
+<!-- SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
+<script src="../JS/app.js"></script>
+
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const clubId = urlParams.get('id');
+const token = localStorage.getItem("token");
+const user = JSON.parse(localStorage.getItem("user"));
+
+if (!user) {
+    window.location.href = "../login.html";
+}
+
+const images = {
+    "Cultural Club": "https://images.unsplash.com/photo-1514525253161-7a46d19cd819",
+    "Coding Club": "https://images.unsplash.com/photo-1519389950473-47ba0277781c",
+    "Entrepreneurship Club": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab",
+    "Technical Club": "https://images.unsplash.com/photo-1485827404703-89b55fcc595e",
+    "Placement Club": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40",
+    "AI & ML Club": "https://images.unsplash.com/photo-1677442136019-21780efad99a"
+};
+
+let membershipStatus = "none";
+let registeredEvents = [];
+
+function openModal() {
+    document.getElementById("joinModal").style.display = "flex";
+}
+
+function closeModal() {
+    document.getElementById("joinModal").style.display = "none";
+}
+
+async function fetchMembershipStatus() {
+    try {
+        const res = await fetch(`http://localhost:5000/api/clubs/${clubId}/membership-status`, {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const data = await res.json();
+        membershipStatus = data.status;
+        
+        const joinBtn = document.getElementById("joinBtn");
+        if (membershipStatus === "approved") {
+            joinBtn.innerText = "Member ✓";
+            joinBtn.disabled = true;
+            joinBtn.style.background = "linear-gradient(135deg, #10b981, #059669)"; // Green button
+        } else if (membershipStatus === "pending") {
+            joinBtn.innerText = "Pending Approval";
+            joinBtn.disabled = true;
+            joinBtn.style.background = "gray";
+        } else if (membershipStatus === "rejected") {
+            joinBtn.innerText = "Request Rejected";
+            joinBtn.disabled = true;
+            joinBtn.style.background = "red";
+        } else {
+            joinBtn.innerText = "Join Club";
+            joinBtn.disabled = false;
+            joinBtn.onclick = openModal;
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+async function fetchRegisteredEvents() {
+    try {
+        const res = await fetch("http://localhost:5000/api/users/me/events", {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const data = await res.json();
+        registeredEvents = data.map(e => e.id);
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+async function loadClubDetails() {
+    try {
+        // 1. Fetch club info
+        const res = await fetch(`http://localhost:5000/api/clubs/${clubId}`);
+        if (!res.ok) {
+            alert("Club not found!");
+            window.location.href = "club-page.html";
+            return;
+        }
+        const club = await res.json();
+
+        document.getElementById("clubName").innerText = club.name;
+        document.getElementById("clubMeta").innerText = `Managed by ${club.admin_name || 'Admin'}`;
+        document.getElementById("clubDesc").innerText = club.description;
+        
+        const clubImg = document.querySelector(".club-header img");
+        if (clubImg) {
+            clubImg.src = images[club.name] || "https://images.unsplash.com/photo-1519389950473-47ba0277781c";
+        }
+
+        // 2. Load events
+        await fetchRegisteredEvents();
+        const eventsRes = await fetch(`http://localhost:5000/api/clubs/${clubId}/events`);
+        const events = await eventsRes.json();
+        
+        const container = document.getElementById("eventsContainer");
+        container.innerHTML = "";
+
+        if (events.length === 0) {
+            container.innerHTML = `<p style="padding: 20px; opacity: 0.6;">No events scheduled for this club yet.</p>`;
+            return;
+        }
+
+        events.forEach(event => {
+            const isRegistered = registeredEvents.includes(event.id);
+            
+            const eventDate = new Date(event.event_date);
+            const now = new Date();
+            let displayStatus = event.status;
+            
+            if (eventDate < now) displayStatus = "completed";
+            else if (eventDate.toDateString() === now.toDateString()) displayStatus = "live";
+            else displayStatus = "upcoming";
+
+            let buttonHTML = "";
+            if (isRegistered) {
+                buttonHTML = `<button class="btn btn-danger" onclick="cancelRegistration(${event.id})">Cancel Registration</button>`;
+            } else {
+                buttonHTML = `
+                    <button class="btn" 
+                        ${displayStatus === "completed" ? "disabled" : ""} 
+                        onclick="joinEvent(${event.id})">
+                        ${displayStatus === "live" ? "Join Now" : displayStatus === "completed" ? "Completed" : "Register"}
+                    </button>`;
+            }
+
+            container.innerHTML += `
+                <div class="event-card">
+                    <img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d">
+                    <div class="card-content">
+                        ${displayStatus === "live" ? `<span class="live-badge"><span class="live-dot"></span> LIVE</span>` : ""}
+                        <h3>${event.title}</h3>
+                        <p>${eventDate.toLocaleString()} • ${event.venue || 'Venue'}</p>
+                        <p class="desc">${event.description}</p>
+                        ${buttonHTML}
+                    </div>
+                </div>
+            `;
+        });
+
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+async function joinEvent(eventId) {
+    try {
+        const res = await fetch("http://localhost:5000/api/registrations", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({ event_id: eventId })
+        });
+        
+        const data = await res.json();
+        
+        if (res.status === 403 && data.message === "NOT_MEMBER") {
+            alert("You must be an approved member of this club to join its events! Please submit a join request.");
+            openModal();
+        } else if (res.ok) {
+            alert("Registered successfully ✅");
+            loadClubDetails();
+        } else {
+            alert(data.message || "Registration failed");
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+async function cancelRegistration(eventId) {
+    if (!confirm("Are you sure you want to cancel event registration?")) return;
+    try {
+        const res = await fetch(`http://localhost:5000/api/registrations/${eventId}`, {
+            method: "DELETE",
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const data = await res.json();
+        alert(data.message);
+        loadClubDetails();
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+// Join Club Form Submit
+document.getElementById("joinClubForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const name = document.getElementById("joinName").value;
+    const course = document.getElementById("joinCourse").value;
+    const roll_number = document.getElementById("joinNumber").value;
+    const email = document.getElementById("joinEmail").value;
+    const reason = document.getElementById("joinReason").value;
+
+    try {
+        const res = await fetch(`http://localhost:5000/api/clubs/${clubId}/join`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({ name, course, roll_number, email, reason })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            alert("Application submitted successfully! Waiting for admin approval.");
+            closeModal();
+            fetchMembershipStatus();
+        } else {
+            alert(data.message || "Failed to submit request.");
+        }
+    } catch (err) {
+        console.error(err);
+    }
+});
+
+async function loadClubAnnouncements() {
+    try {
+        const res = await fetch(`http://localhost:5000/api/clubs/${clubId}/announcements`);
+        const announcements = await res.json();
+        
+        const container = document.getElementById("clubAnnouncements");
+        container.innerHTML = "";
+        
+        if (announcements.length === 0) {
+            container.innerHTML = `<p style="opacity: 0.6; padding: 10px 0;">No announcements from this club yet.</p>`;
+            return;
+        }
+        
+        announcements.forEach(ann => {
+            const date = new Date(ann.created_at).toLocaleDateString();
+            container.innerHTML += `
+                <div style="background: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.08); text-align: left;">
+                    <h4 style="color: #a78bfa; font-size: 15px; margin-bottom: 4px;">${ann.title}</h4>
+                    <p style="font-size: 11px; opacity: 0.5; margin-bottom: 8px;">Posted on ${date}</p>
+                    <p style="font-size: 13px; color: #cbd5f5; white-space: pre-wrap; line-height: 1.4;">${ann.content}</p>
+                </div>
+            `;
+        });
+    } catch (err) {
+        console.error("Error loading club announcements:", err);
+    }
+}
+
+// Init
+fetchMembershipStatus();
+loadClubDetails();
+loadClubAnnouncements();
+</script>
+
+</body>
+</html>

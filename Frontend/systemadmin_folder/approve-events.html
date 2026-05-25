@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Approve Events | AURIX</title>
+
+<link rel="stylesheet" href="../CSS/style.css">
+<script src="https://kit.fontawesome.com/64d58efce2.js"></script>
+</head>
+
+<body class="dashboard-page">
+
+<!-- PARTICLES -->
+<div id="particles-js"></div>
+
+<!-- ================= TOPBAR ================= -->
+<div class="topbar">
+
+    <div class="nav-left">
+        <i class="fas fa-bars menu-icon" onclick="toggleSidebar()"></i>
+        <h2 class="logo">AURIX ADMIN</h2>
+    </div>
+
+    <div class="menu">
+        <a href="admin-dashboard.html" class="nav-btn" onclick="handleNav(event, this)">Dashboard</a>
+        <a href="approve-events.html" class="active">Approve Events</a>
+        <a href="manage_clubs.html" class="nav-btn" onclick="handleNav(event, this)">Clubs</a>
+        <a href="manage-user.html" class="nav-btn" onclick="handleNav(event, this)">Users</a>
+        <a href="../student_folder/announcements.html" class="nav-btn" onclick="handleNav(event, this)">Announcements</a>
+    </div>
+
+    <i class="fas fa-user profile-icon" onclick="toggleSidebar()"></i>
+
+</div>
+
+<!-- ================= SIDEBAR ================= -->
+<div class="sidebar" id="sidebar">
+
+    <h3>System Admin</h3>
+
+    <a href="admin-dashboard.html">⚙️ Dashboard</a>
+    <a href="approve-events.html">✅ Approve Events</a>
+    <a href="manage_clubs.html">🏫 Manage Clubs</a>
+    <a href="manage-user.html">👥 Users</a>
+    <a href="../student_folder/announcements.html">📢 Announcements</a>
+
+    <hr>
+
+    <a onclick="logout()">🚪 Logout</a>
+
+</div>
+
+<div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<!-- ================= MAIN ================= -->
+<div class="main-content">
+
+    <h2 class="section-title">⏳ Pending Event Approvals</h2>
+    <div class="event-grid" id="pendingEventsContainer">
+        <!-- Dynamic loading -->
+    </div>
+
+    <!-- ================= APPROVED EVENTS ================= -->
+    <h2 class="section-title">✅ Approved Events</h2>
+    <div class="event-grid" id="approvedEventsContainer">
+        <!-- Dynamic loading -->
+    </div>
+
+</div>
+
+<!-- ================= FOOTER ================= -->
+<footer class="footer">
+
+    <div class="footer-container">
+
+        <div>
+            <h2>AURIX</h2>
+            <p>Smart College Event Platform</p>
+        </div>
+
+        <div>
+            <h4>Admin Panel</h4>
+            <p>Dashboard</p>
+            <p>Events</p>
+            <p>Users</p>
+        </div>
+
+        <div>
+            <h4>Contact</h4>
+            <p>aurix@college.com</p>
+            <p>+91 9876543210</p>
+        </div>
+
+    </div>
+
+    <div class="footer-bottom">
+        © 2026 AURIX • All rights reserved
+    </div>
+
+</footer>
+
+<!-- SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
+<script src="../JS/app.js"></script>
+
+<script>
+const user = JSON.parse(localStorage.getItem("user"));
+const token = localStorage.getItem("token");
+
+if (!user || user.role !== 'admin') {
+    window.location.href = "../login.html";
+}
+
+async function loadPendingEvents() {
+    try {
+        const res = await fetch("http://localhost:5000/api/admin/events", {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const events = await res.json();
+
+        const pendingContainer = document.getElementById("pendingEventsContainer");
+        const approvedContainer = document.getElementById("approvedEventsContainer");
+
+        pendingContainer.innerHTML = "";
+        approvedContainer.innerHTML = "";
+
+        const pendingEvents = events.filter(e => e.status === "pending");
+        const approvedEvents = events.filter(e => e.status === "published");
+
+        if (pendingEvents.length === 0) {
+            pendingContainer.innerHTML = `<p style="opacity: 0.6; padding: 20px;">No pending event approvals.</p>`;
+        } else {
+            pendingEvents.forEach(event => {
+                const date = new Date(event.event_date).toLocaleString();
+                pendingContainer.innerHTML += `
+                    <div class="event-card" style="width: 320px;">
+                        <div class="card-content">
+                            <h3>${event.title}</h3>
+                            <p><b>Club:</b> ${event.club_name || 'N/A'}</p>
+                            <p><b>Date:</b> ${date}</p>
+                            <p><b>Venue:</b> ${event.venue || 'N/A'}</p>
+                            <p class="desc" style="font-size: 14px; opacity: 0.8; max-height: 80px; overflow-y: auto; margin-bottom: 15px;">${event.description}</p>
+                            <div style="display:flex; gap:10px; margin-top:10px;">
+                                <button class="btn" onclick="resolveEvent(${event.id}, 'published')" style="flex: 1;">Approve</button>
+                                <button class="btn btn-danger" onclick="resolveEvent(${event.id}, 'rejected')" style="flex: 1;">Reject</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        if (approvedEvents.length === 0) {
+            approvedContainer.innerHTML = `<p style="opacity: 0.6; padding: 20px;">No approved events.</p>`;
+        } else {
+            approvedEvents.forEach(event => {
+                const date = new Date(event.event_date).toLocaleString();
+                approvedContainer.innerHTML += `
+                    <div class="event-card" style="width: 320px;">
+                        <div class="card-content">
+                            <h3>${event.title}</h3>
+                            <p><b>Club:</b> ${event.club_name || 'N/A'}</p>
+                            <p><b>Date:</b> ${date}</p>
+                            <p style="color:#4ade80; font-weight: 500; margin-top: 10px;">✅ Approved & Published</p>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+    } catch (err) {
+        console.error("Error loading events for approval:", err);
+    }
+}
+
+async function resolveEvent(eventId, newStatus) {
+    try {
+        // Fetch current event details first to avoid missing required fields
+        const eventsRes = await fetch("http://localhost:5000/api/admin/events", {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const events = await eventsRes.json();
+        const event = events.find(e => e.id === eventId);
+        if (!event) return;
+
+        const res = await fetch(`http://localhost:5000/api/events/${eventId}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                title: event.title,
+                description: event.description,
+                category: event.category,
+                event_date: event.event_date.split('T')[0] + 'T' + event.event_date.split('T')[1].substring(0, 5),
+                venue: event.venue,
+                status: newStatus
+            })
+        });
+
+        if (res.ok) {
+            alert(`Event has been ${newStatus === 'published' ? 'approved' : 'rejected'}!`);
+            loadPendingEvents();
+        } else {
+            const data = await res.json();
+            alert("Error: " + data.message);
+        }
+    } catch (err) {
+        console.error("Error resolving event:", err);
+    }
+}
+
+loadPendingEvents();
+</script>
+
+</body>
+</html>
