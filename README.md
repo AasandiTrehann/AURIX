@@ -45,7 +45,7 @@ AURIX is a modern, responsive, and full-featured College Event Management and Cl
 Ensure MySQL is running on your machine. The database configuration in `server.js` and `setup_db.js` uses:
 - **Host**: `localhost`
 - **User**: `root`
-- **Password**: `root`
+- **Password**: `xxxx`
 *(If your MySQL credentials differ, adjust the configurations in `server.js` and `setup_db.js` accordingly).*
 
 ### 3. Install Dependencies
