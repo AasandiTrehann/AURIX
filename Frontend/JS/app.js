@@ -6,6 +6,10 @@
    - No duplicates
    ===================================================== */
 
+window.API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:5000'
+    : 'https://aurix-l430.onrender.com';
+
 console.log("AURIX JS LOADED 🚀");
 
 /* ================= SAFE ANGULAR INIT ================= */
@@ -69,13 +73,14 @@ if (app) {
 
                 switch(role) {
                     case "admin":
-                        window.location.href = "admin/systemadmin_dashboard.html";
+                        window.location.href = "systemadmin_folder/admin-dashboard.html";
                         break;
+                    case "club_admin":
                     case "club":
-                        window.location.href = "clubadmin/clubadmin_dashboard.html";
+                        window.location.href = "clubadmin_folder/clubadmin_dashboard.html";
                         break;
                     default:
-                        window.location.href = "student/student-dashboard.html";
+                        window.location.href = "student_folder/student-dashboard.html";
                 }
 
             }, 1000);

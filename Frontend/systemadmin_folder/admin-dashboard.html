@@ -157,21 +157,21 @@ if (!user || user.role !== 'admin') {
 async function loadAdminStats() {
     try {
         // Fetch users
-        const userRes = await fetch("http://localhost:5000/api/admin/users", {
+        const userRes = await fetch(window.API_BASE_URL + "/api/admin/users", {
             headers: { "Authorization": `Bearer ${token}` }
         });
         const users = await userRes.json();
         document.getElementById("totalUsers").innerText = users.length;
 
         // Fetch clubs
-        const clubRes = await fetch("http://localhost:5000/api/clubs", {
+        const clubRes = await fetch(window.API_BASE_URL + "/api/clubs", {
             headers: { "Authorization": `Bearer ${token}` }
         });
         const clubs = await clubRes.json();
         document.getElementById("activeClubs").innerText = clubs.length;
 
         // Fetch events (all, including pending)
-        const eventRes = await fetch("http://localhost:5000/api/admin/events", {
+        const eventRes = await fetch(window.API_BASE_URL + "/api/admin/events", {
             headers: { "Authorization": `Bearer ${token}` }
         });
         const events = await eventRes.json();
@@ -185,7 +185,7 @@ async function loadAdminStats() {
         document.getElementById("pendingApprovals").innerText = pendingEvents.length;
 
         // Fetch registrations
-        const regRes = await fetch("http://localhost:5000/api/admin/registrations", {
+        const regRes = await fetch(window.API_BASE_URL + "/api/admin/registrations", {
             headers: { "Authorization": `Bearer ${token}` }
         });
         const registrations = await regRes.json();

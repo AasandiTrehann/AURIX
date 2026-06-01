@@ -136,7 +136,7 @@ let allRegistrations = [];
 async function init() {
     try {
         // 1. Fetch club info
-        const clubRes = await fetch("http://localhost:5000/api/my-club", {
+        const clubRes = await fetch(window.API_BASE_URL + "/api/my-club", {
             headers: { "Authorization": `Bearer ${token}` }
         });
         if (!clubRes.ok) throw new Error("Failed to load club details");
@@ -144,7 +144,7 @@ async function init() {
 
         if (club.id) {
             // 2. Fetch all events for this club
-            const eventsRes = await fetch(`http://localhost:5000/api/clubs/${club.id}/events`, {
+            const eventsRes = await fetch(`${window.API_BASE_URL}/api/clubs/${club.id}/events`, {
                 headers: { "Authorization": `Bearer ${token}` }
             });
             if (!eventsRes.ok) throw new Error("Failed to load club events");
@@ -174,7 +174,7 @@ async function loadAllRegistrations() {
     // Fetch registrations for all club events in parallel
     const promises = clubEvents.map(async (event) => {
         try {
-            const res = await fetch(`http://localhost:5000/api/events/${event.id}/registrations`, {
+            const res = await fetch(`${window.API_BASE_URL}/api/events/${event.id}/registrations`, {
                 headers: { "Authorization": `Bearer ${token}` }
             });
             if (res.ok) {

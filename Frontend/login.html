@@ -67,6 +67,8 @@
 
 <script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
 
+<script src="JS/app.js"></script>
+
 <script>
 document.getElementById("loginForm").addEventListener("submit", async function(e) {
 
@@ -76,7 +78,7 @@ document.getElementById("loginForm").addEventListener("submit", async function(e
     const password = document.getElementById("password").value;
 
     try {
-        const res = await fetch("http://localhost:5000/api/auth/login", {
+        const res = await fetch(window.API_BASE_URL + "/api/auth/login", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -114,8 +116,6 @@ document.getElementById("loginForm").addEventListener("submit", async function(e
 
 });
 </script>
-
-<script src="JS/app.js"></script>
 
 </body>
 </html>

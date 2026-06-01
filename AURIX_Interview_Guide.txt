@@ -1,0 +1,214 @@
+================================================================================
+                    AURIX - PROJECT PORTFOLIO & INTERVIEW GUIDE
+================================================================================
+This guide contains complete technical breakdowns, architectural blueprints,
+database structures, and interview-focused questions and answers for AURIX.
+
+--------------------------------------------------------------------------------
+1. PROJECT OVERVIEW & VALUE PROPOSITION
+--------------------------------------------------------------------------------
+AURIX is a modern, responsive, full-featured College Event Management and Club
+Collaboration Portal. It bridges the gap between students, club organizers, and
+system administrators, consolidating college events, announcements, and memberships
+into a single platform.
+
+Key Value Proposition:
+- Centralizes scattered college activities into structured channels.
+- Eliminates manual Google Forms tracking for club admissions and event sign-ups.
+- Introduces multi-tier governance (Student -> Club Admin -> System Admin) with
+  audit trails (draft, pending, published, completed event lifecycles).
+
+--------------------------------------------------------------------------------
+2. SYSTEM ARCHITECTURE & DATA FLOW
+--------------------------------------------------------------------------------
+AURIX is designed as a modular monolithic web application.
+
+- Client Layer (Frontend):
+  - Tech: HTML5, CSS3 (Custom animations & styling), Vanilla JS (ES6+).
+  - Key Component: A dynamic helper script (`Frontend/JS/app.js`) that automatically
+    initializes the page layout, injects sidebars, parses navigation states, 
+    renders particle backgrounds, and handles role-based frontend routing.
+
+- Server Layer (Backend):
+  - Tech: Node.js, Express.js.
+  - Features: Token-based stateless authentication (JWT), secure password hashing 
+    (bcrypt), role verification middleware, and RESTful API endpoints.
+
+- Database Layer (Storage):
+  - Tech: MySQL (Relational Database Management System).
+  - Connection: Managed via `mysql2/promise` using a connection pool for high-
+    performance concurrent requests.
+
+Data Flow Example (User Login & Event Loading):
+[Browser] --- (POST Credentials) ---> [Express Server] --- (SELECT Query) ---> [MySQL]
+[Browser] <--- (JWT Token & Role) --- [Express Server]
+[Browser] --- (GET /api/events + JWT) -> [Express Server] (Verifies token) ---> [MySQL]
+[Browser] <--- (Published Events JSON) - [Express Server]
+  |--> Client-side JS filters and sorts events dynamically by date (Live/Upcoming/Past)
+
+--------------------------------------------------------------------------------
+3. DATABASE SCHEMA & RELATIONAL INTEGRITY
+--------------------------------------------------------------------------------
+AURIX's database (`aurixf`) comprises 6 normalized relational tables.
+
+A. `users` Table (Holds accounts)
+   - `id`: INT (Auto Increment, Primary Key)
+   - `name`: VARCHAR(100) (User name)
+   - `email`: VARCHAR(100) (Unique index, login credential)
+   - `password`: VARCHAR(255) (Bcrypt hashed password hash)
+   - `role`: ENUM('student', 'club_admin', 'admin') (Default: 'student')
+   - `created_at`: TIMESTAMP (Default: Current Timestamp)
+
+B. `clubs` Table (Holds campus clubs)
+   - `id`: INT (Auto Increment, Primary Key)
+   - `name`: VARCHAR(100) (Club name, e.g., 'Coding Club')
+   - `description`: TEXT (Club info)
+   - `admin_id`: INT (Foreign Key referencing `users(id)`, ON DELETE SET NULL)
+     * Design choice: If a club admin user is deleted, the club remains but the 
+       admin association is set to NULL to prevent orphaned records.
+
+C. `events` Table (Holds club-organized events)
+   - `id`: INT (Auto Increment, Primary Key)
+   - `title`: VARCHAR(150) (Event title)
+   - `description`: TEXT (Event details)
+   - `category`: VARCHAR(50) (e.g., 'Coding', 'Cultural')
+   - `event_date`: DATETIME (Event schedule date and time)
+   - `venue`: VARCHAR(100) (e.g., 'Main Auditorium')
+   - `status`: ENUM('draft', 'pending', 'published', 'rejected', 'completed') (Default: 'pending')
+   - `club_id`: INT (Foreign Key referencing `clubs(id)`, ON DELETE CASCADE)
+     * Design choice: If a club is deleted, all its events are automatically deleted.
+   - `image_url`: VARCHAR(255) (Direct URL link to event banner)
+   - `created_at`: TIMESTAMP (Default: Current Timestamp)
+
+D. `registrations` Table (Event signups - Join table)
+   - `id`: INT (Auto Increment, Primary Key)
+   - `student_id`: INT (Foreign Key referencing `users(id)`, ON DELETE CASCADE)
+   - `event_id`: INT (Foreign Key referencing `events(id)`, ON DELETE CASCADE)
+   - `status`: ENUM('registered', 'cancelled') (Default: 'registered')
+   - `registered_at`: TIMESTAMP (Default: Current Timestamp)
+
+E. `club_memberships` Table (Club join requests - Join table)
+   - `id`: INT (Auto Increment, Primary Key)
+   - `student_id`: INT (Foreign Key referencing `users(id)`, ON DELETE CASCADE)
+   - `club_id`: INT (Foreign Key referencing `clubs(id)`, ON DELETE CASCADE)
+   - `status`: ENUM('pending', 'approved', 'rejected') (Default: 'pending')
+   - `student_name`: VARCHAR(100) (Snapshot name)
+   - `course`: VARCHAR(100)
+   - `roll_number`: VARCHAR(50)
+   - `email`: VARCHAR(100)
+   - `reason`: TEXT (Why they want to join)
+   - `created_at`: TIMESTAMP (Default: Current Timestamp)
+
+F. `announcements` Table (Club bulletins)
+   - `id`: INT (Auto Increment, Primary Key)
+   - `title`: VARCHAR(150)
+   - `content`: TEXT
+   - `club_id`: INT (Foreign Key referencing `clubs(id)`, ON DELETE CASCADE)
+   - `created_at`: TIMESTAMP (Default: Current Timestamp)
+
+--------------------------------------------------------------------------------
+4. CORE FEATURES: INTERNALS & HOW THEY WORK
+--------------------------------------------------------------------------------
+
+A. Authentication & Security
+   - Public registration `/api/auth/register` strictly creates students.
+   - Login `/api/auth/login` checks the user, compares passwords using `bcrypt.compare`,
+     and signs a JWT token incorporating user ID and role.
+   - Server-side route validation uses `authMiddleware` (verifies token authenticity)
+     and `roleMiddleware(['admin', 'club_admin'])` (restricts actions to authorized roles).
+
+B. Student Portal
+   - Dashboard: Queries all events with status = `published`. The frontend JS computes
+     the event status dynamically relative to current local date:
+     - Date < Now = Completed (displays under "Past Events")
+     - Date is Today = Live (displays under "Live Events")
+     - Date > Today = Upcoming (displays under "Upcoming Events")
+   - Club Explorer: Displays all active clubs. Students can view profile pages.
+   - Club Membership: An interactive application form. Submitted requests are saved
+     as `pending` and are routed to the managing Club Admin.
+   - Event Registrations: Checks if the user is an approved member of the event's club
+     (`NOT_MEMBER`). If not, prompts the student to join the club first.
+
+C. Club Admin Portal
+   - Dashboard: Fetches and displays pending join requests (`status = 'pending'`) for
+     their specific club. They can approve (set `status = 'approved'`) or reject.
+   - Event Creation & Edit: Can save events as `draft` or `published` (published events
+     are set to `pending` in the backend until a System Admin approves them). Also
+     supports uploading/modifying custom image URLs for event posters.
+   - Announcements: Create or delete club announcements.
+
+D. System Admin Portal
+   - User Management: Create new users (Admins, Club Admins, Students) and delete users.
+   - Club Management: Creates clubs and links them to an existing user who becomes the admin.
+   - Event Approval: Reviews and approves (`status = 'published'`) or rejects events.
+
+--------------------------------------------------------------------------------
+5. KEY IMPLEMENTATION HIGHLIGHTS (IMPRESS RECRUITERS)
+--------------------------------------------------------------------------------
+
+A. Timezone-Safe Live Status Calculations:
+   - Challenge: Date boundaries shift across timezones. If server seeds UTC times,
+     events might show as "Completed" prematurely on user screens.
+   - Solution: The database setup seeds the time using a relative local end-of-day
+     string (`YYYY-MM-DD 23:59:59`). The client browser parses this UTC string locally.
+     Since the end-of-day time is always ahead of the current local hour on the same day,
+     the event correctly registers as "Live" for the entire day.
+
+B. Dynamic Layout and Asset Ingestion:
+   - Challenge: Standardizing header, sidebar, and layout scripts across deep nested
+     folders (e.g., `Frontend/student_folder/`, `Frontend/clubadmin_folder/`) without
+     using frameworks like React.
+   - Solution: Designed a self-contained runtime script (`app.js`). It reads the
+     client's window path, calculates relative offsets (pre-pending `../` when in
+     subfolders), checks `localStorage` for role permissions, and dynamically constructs
+     and injects the specific sidebar links and theme styling at load time.
+
+--------------------------------------------------------------------------------
+6. SAMPLE INTERVIEW QUESTIONS & ANSWERS (QA)
+--------------------------------------------------------------------------------
+
+Q1: What architectural pattern does this project follow, and why did you choose it?
+A1: "AURIX uses a Client-Server Architecture. The frontend is built with clean semantic
+    HTML, CSS, and Vanilla JavaScript, communicating asynchronously via fetch APIs to
+    a Node/Express backend backed by a MySQL database. I chose this stack because it
+    avoids build-step overhead, runs fast, and shows a strong command of foundational
+    web technologies (raw DOM manipulation, SQL relational structures, and HTTP protocols)
+    which frameworks abstract away."
+
+Q2: How did you implement authentication and restrict page access based on user roles?
+A2: "I used JSON Web Tokens (JWT) for stateless authentication. On a successful login,
+    the server returns a token containing the user's ID and role, which the client
+    stores in `localStorage`. 
+    For API routes, I created Express middlewares: `authMiddleware` decodes the token,
+    and `roleMiddleware` restricts access to roles specified in an array (e.g., ['admin']).
+    For page redirects, the client script reads `localStorage` and routes the user.
+    If a student attempts to access `/systemadmin_folder/admin-dashboard.html`, the header script
+    intercepts the request and redirects them to the login screen."
+
+Q3: How did you design database relationships to handle user deletions safely?
+A3: "I set up foreign key constraints to preserve referential integrity.
+    For memberships and registrations, I used `ON DELETE CASCADE`, meaning if a student
+    or event is deleted, their sign-up history is deleted automatically.
+    For clubs, the `admin_id` uses `ON DELETE SET NULL`. If a club admin's account is
+    deleted, the club is not deleted; instead, the admin field is set to NULL, allowing
+    system admins to assign a new club manager without losing the club's data."
+
+Q4: What was a challenging logic problem you faced, and how did you solve it?
+A4: "Determining whether an event was live, completed, or upcoming dynamically.
+    The database stores date objects. Initially, if we seeded events at the exact time
+    the server setup was run, within minutes they would show up as 'Completed' because
+    the client compared current time `new Date()` against the event start time.
+    I solved this by writing a custom seeding function that formats the event date with
+    the local end-of-day timestamp (`23:59:59`). On comparison, the client sees that
+    the event date matches 'today' and the time is still in the future, thus successfully
+    retaining the 'Live' badge throughout the event day."
+
+Q5: If you had to scale this application, what would be your next steps?
+A5: "I would implement three major changes:
+    1. Introduce redis caching for read-heavy operations, such as loading published events
+       and announcements.
+    2. Set up AWS S3 for hosting custom event poster images, replacing text-only URL inputs
+       with a direct image upload endpoint using `multer`.
+    3. Transition the client-side state management from localStorage to HTTP-only cookies
+       to shield the JWT token from potential XSS (Cross-Site Scripting) vulnerabilities."
+================================================================================

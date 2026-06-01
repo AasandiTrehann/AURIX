@@ -113,7 +113,7 @@ if (!user || user.role !== 'admin') {
 
 async function loadPendingEvents() {
     try {
-        const res = await fetch("http://localhost:5000/api/admin/events", {
+        const res = await fetch(window.API_BASE_URL + "/api/admin/events", {
             headers: { "Authorization": `Bearer ${token}` }
         });
         const events = await res.json();
@@ -175,14 +175,14 @@ async function loadPendingEvents() {
 async function resolveEvent(eventId, newStatus) {
     try {
         // Fetch current event details first to avoid missing required fields
-        const eventsRes = await fetch("http://localhost:5000/api/admin/events", {
+        const eventsRes = await fetch(window.API_BASE_URL + "/api/admin/events", {
             headers: { "Authorization": `Bearer ${token}` }
         });
         const events = await eventsRes.json();
         const event = events.find(e => e.id === eventId);
         if (!event) return;
 
-        const res = await fetch(`http://localhost:5000/api/events/${eventId}`, {
+        const res = await fetch(`${window.API_BASE_URL}/api/events/${eventId}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",

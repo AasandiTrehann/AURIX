@@ -77,10 +77,11 @@ The database setup seeds the following default accounts for testing:
 
 | Role | Username / Email | Password |
 |---|---|---|
-| **System Admin** | `sysadmin@aurix.com` | `sysadmin123` |
-| **Coding Club Admin** | `coding@aurix.com` | `coding123` |
-| **Cultural Club Admin** | `cultural@aurix.com` | `cultural123` |
-| **Entrepreneurship Club Admin** | `entrepreneur@aurix.com` | `entrepreneur123` |
-| **Technical Club Admin** | `tech@aurix.com` | `tech123` |
-| **Placement Club Admin** | `placement@aurix.com` | `placement123` |
-| **Student** | `student@aurix.com` | `student123` |
+| **System Admin** | `admin@aurix.com` | `admin123` |
+| **Coding Club Admin** | `coding_admin@college.com` | `admin123` |
+| **Cultural Club Admin** | `cultural_admin@college.com` | `admin123` |
+| **Entrepreneurship Club Admin** | `ent_admin@college.com` | `admin123` |
+| **Technical Club Admin** | `tech_admin@college.com` | `admin123` |
+| **Placement Club Admin** | `placement_admin@college.com` | `admin123` |
+| **Student** | `student@aurix.com` | `admin123` |
+| **Additional Students** | `rahul@gmail.com` / `aish@gmail.com` | `admin123` |

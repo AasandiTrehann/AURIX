@@ -113,6 +113,9 @@
             <label class="form-label" style="display:block; margin-bottom:5px; font-weight:bold; font-size:14px; opacity:0.8;">Description</label>
             <textarea name="description" placeholder="Provide a detailed description of the event, guidelines, and benefits..." required style="width:100%; height:120px; margin-bottom:15px;"></textarea>
 
+            <label class="form-label" style="display:block; margin-bottom:5px; font-weight:bold; font-size:14px; opacity:0.8;">Event Image URL (Optional)</label>
+            <input type="url" name="image_url" placeholder="https://images.unsplash.com/... or leave blank for default poster" style="width:100%; margin-bottom:15px;">
+
             <!-- STATUS -->
             <label class="form-label" style="display:block; margin-bottom:5px; font-weight:bold; font-size:14px; opacity:0.8;">Status</label>
             <select name="status" id="eventStatus" style="width:100%; margin-bottom:15px; background:rgba(255,255,255,0.1); color:white; border-radius:10px; border:1px solid rgba(255,255,255,0.15); padding:14px;">
@@ -186,7 +189,7 @@ let club = null;
 async function initPage() {
     try {
         // 1. Fetch Club Info first
-        const clubRes = await fetch("http://localhost:5000/api/my-club", {
+        const clubRes = await fetch(window.API_BASE_URL + "/api/my-club", {
             headers: { "Authorization": `Bearer ${token}` }
         });
         club = await clubRes.json();
@@ -216,7 +219,7 @@ async function initPage() {
                 <option value="rejected">Rejected</option>
             `;
 
-            const eventsRes = await fetch(`http://localhost:5000/api/clubs/${club.id}/events`, {
+            const eventsRes = await fetch(`${window.API_BASE_URL}/api/clubs/${club.id}/events`, {
                 headers: { "Authorization": `Bearer ${token}` }
             });
             const events = await eventsRes.json();
@@ -228,6 +231,7 @@ async function initPage() {
                 if (event.category) form.category.value = event.category;
                 if (event.venue) form.venue.value = event.venue;
                 if (event.status) form.status.value = event.status;
+                if (event.image_url) form.image_url.value = event.image_url;
 
                 // Split datetime (YYYY-MM-DDTHH:MM:SS.000Z)
                 if (event.event_date) {
@@ -261,16 +265,17 @@ document.getElementById("createEventForm").addEventListener("submit", async func
     const venue = form.venue.value;
     const description = form.description.value;
     const status = form.status.value;
+    const image_url = form.image_url.value;
 
     // 🔥 combine date + time
     const event_date = `${date}T${time}:00`;
 
     try {
-        let url = "http://localhost:5000/api/events";
+        let url = window.API_BASE_URL + "/api/events";
         let method = "POST";
 
         if (editEventId) {
-            url = `http://localhost:5000/api/events/${editEventId}`;
+            url = `${window.API_BASE_URL}/api/events/${editEventId}`;
             method = "PUT";
         }
 
@@ -280,7 +285,8 @@ document.getElementById("createEventForm").addEventListener("submit", async func
             category: category,
             event_date: event_date,
             venue: venue,
-            status: status
+            status: status,
+            image_url: image_url
         };
 
         if (!editEventId) {

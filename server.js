@@ -219,7 +219,7 @@ app.get('/api/clubs', async (req, res) => {
    ========================================================= */
 // Create event
 app.post('/api/events', authMiddleware, roleMiddleware(['club_admin', 'admin']), async (req, res) => {
-    const { title, description, category, event_date, venue, status, club_id } = req.body;
+    const { title, description, category, event_date, venue, status, club_id, image_url } = req.body;
     
     let finalStatus = status || 'pending';
     if (req.user.role === 'club_admin') {
@@ -230,8 +230,8 @@ app.post('/api/events', authMiddleware, roleMiddleware(['club_admin', 'admin']),
     
     try {
         await pool.query(
-            'INSERT INTO events (title, description, category, event_date, venue, status, club_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [title, description, category, event_date, venue, finalStatus, club_id]
+            'INSERT INTO events (title, description, category, event_date, venue, status, club_id, image_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            [title, description, category, event_date, venue, finalStatus, club_id, image_url || null]
         );
         res.status(201).json({ message: 'Event created' });
     } catch (error) {
@@ -262,14 +262,15 @@ app.get('/api/clubs/:id/events', authMiddleware, async (req, res) => {
 
 // Update event
 app.put('/api/events/:id', authMiddleware, roleMiddleware(['club_admin', 'admin']), async (req, res) => {
-    const { title, description, category, event_date, venue, status } = req.body;
+    const { title, description, category, event_date, venue, status, image_url } = req.body;
     try {
         await pool.query(
-            'UPDATE events SET title=?, description=?, category=?, event_date=?, venue=?, status=? WHERE id=?',
-            [title, description, category, event_date, venue, status, req.params.id]
+            'UPDATE events SET title=?, description=?, category=?, event_date=?, venue=?, status=?, image_url=? WHERE id=?',
+            [title, description, category, event_date, venue, status, image_url || null, req.params.id]
         );
         res.json({ message: 'Event updated' });
     } catch (error) {
+        console.error(error);
         res.status(500).json({ message: 'Server error' });
     }
 });

@@ -129,7 +129,7 @@ let club = null;
 
 async function init() {
     try {
-        const clubRes = await fetch("http://localhost:5000/api/my-club", {
+        const clubRes = await fetch(window.API_BASE_URL + "/api/my-club", {
             headers: { "Authorization": `Bearer ${token}` }
         });
         if (!clubRes.ok) throw new Error("Failed to load club details");
@@ -145,7 +145,7 @@ async function init() {
 async function loadEvents() {
     try {
         if (!club || !club.id) return;
-        const res = await fetch(`http://localhost:5000/api/clubs/${club.id}/events`, {
+        const res = await fetch(`${window.API_BASE_URL}/api/clubs/${club.id}/events`, {
             headers: { "Authorization": `Bearer ${token}` }
         });
 
@@ -273,7 +273,7 @@ async function deleteEvent(id) {
     if (!confirm("Are you sure you want to delete this event? This will remove all student registrations for this event as well.")) return;
 
     try {
-        const res = await fetch(`http://localhost:5000/api/events/${id}`, {
+        const res = await fetch(`${window.API_BASE_URL}/api/events/${id}`, {
             method: "DELETE",
             headers: { "Authorization": `Bearer ${token}` }
         });
@@ -295,7 +295,7 @@ async function updateStatus(id, newStatus) {
         if (!event) return;
 
         // If a club admin publishes, it goes to pending.
-        const res = await fetch(`http://localhost:5000/api/events/${id}`, {
+        const res = await fetch(`${window.API_BASE_URL}/api/events/${id}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",

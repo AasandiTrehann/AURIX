@@ -235,7 +235,7 @@ function closeModal() {
 
 async function fetchMembershipStatus() {
     try {
-        const res = await fetch(`http://localhost:5000/api/clubs/${clubId}/membership-status`, {
+        const res = await fetch(`${window.API_BASE_URL}/api/clubs/${clubId}/membership-status`, {
             headers: { "Authorization": `Bearer ${token}` }
         });
         const data = await res.json();
@@ -266,7 +266,7 @@ async function fetchMembershipStatus() {
 
 async function fetchRegisteredEvents() {
     try {
-        const res = await fetch("http://localhost:5000/api/users/me/events", {
+        const res = await fetch(window.API_BASE_URL + "/api/users/me/events", {
             headers: { "Authorization": `Bearer ${token}` }
         });
         const data = await res.json();
@@ -279,7 +279,7 @@ async function fetchRegisteredEvents() {
 async function loadClubDetails() {
     try {
         // 1. Fetch club info
-        const res = await fetch(`http://localhost:5000/api/clubs/${clubId}`);
+        const res = await fetch(`${window.API_BASE_URL}/api/clubs/${clubId}`);
         if (!res.ok) {
             alert("Club not found!");
             window.location.href = "club-page.html";
@@ -298,7 +298,7 @@ async function loadClubDetails() {
 
         // 2. Load events
         await fetchRegisteredEvents();
-        const eventsRes = await fetch(`http://localhost:5000/api/clubs/${clubId}/events`);
+        const eventsRes = await fetch(`${window.API_BASE_URL}/api/clubs/${clubId}/events`);
         const events = await eventsRes.json();
         
         const container = document.getElementById("eventsContainer");
@@ -334,7 +334,7 @@ async function loadClubDetails() {
 
             container.innerHTML += `
                 <div class="event-card">
-                    <img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d">
+                    <img src="${event.image_url || 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d'}">
                     <div class="card-content">
                         ${displayStatus === "live" ? `<span class="live-badge"><span class="live-dot"></span> LIVE</span>` : ""}
                         <h3>${event.title}</h3>
@@ -353,7 +353,7 @@ async function loadClubDetails() {
 
 async function joinEvent(eventId) {
     try {
-        const res = await fetch("http://localhost:5000/api/registrations", {
+        const res = await fetch(window.API_BASE_URL + "/api/registrations", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -381,7 +381,7 @@ async function joinEvent(eventId) {
 async function cancelRegistration(eventId) {
     if (!confirm("Are you sure you want to cancel event registration?")) return;
     try {
-        const res = await fetch(`http://localhost:5000/api/registrations/${eventId}`, {
+        const res = await fetch(`${window.API_BASE_URL}/api/registrations/${eventId}`, {
             method: "DELETE",
             headers: { "Authorization": `Bearer ${token}` }
         });
@@ -403,7 +403,7 @@ document.getElementById("joinClubForm").addEventListener("submit", async functio
     const reason = document.getElementById("joinReason").value;
 
     try {
-        const res = await fetch(`http://localhost:5000/api/clubs/${clubId}/join`, {
+        const res = await fetch(`${window.API_BASE_URL}/api/clubs/${clubId}/join`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -426,7 +426,7 @@ document.getElementById("joinClubForm").addEventListener("submit", async functio
 
 async function loadClubAnnouncements() {
     try {
-        const res = await fetch(`http://localhost:5000/api/clubs/${clubId}/announcements`);
+        const res = await fetch(`${window.API_BASE_URL}/api/clubs/${clubId}/announcements`);
         const announcements = await res.json();
         
         const container = document.getElementById("clubAnnouncements");

@@ -121,7 +121,7 @@ const token = localStorage.getItem("token");
 
 async function loadMyEvents() {
     try {
-        const res = await fetch("http://localhost:5000/api/users/me/events", {
+        const res = await fetch(window.API_BASE_URL + "/api/users/me/events", {
             headers: { "Authorization": `Bearer ${token}` }
         });
         const events = await res.json();
@@ -173,7 +173,7 @@ async function loadMyEvents() {
 
             const card = `
             <div class="event-card" style="width: 320px;">
-                <img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d">
+                <img src="${event.image_url || 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d'}">
 
                 <div class="card-content">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
@@ -209,7 +209,7 @@ async function loadMyEvents() {
 async function cancelRegistration(eventId) {
     if (!confirm("Are you sure you want to cancel your registration?")) return;
     try {
-        const res = await fetch(`http://localhost:5000/api/registrations/${eventId}`, {
+        const res = await fetch(`${window.API_BASE_URL}/api/registrations/${eventId}`, {
             method: "DELETE",
             headers: {
                 "Authorization": `Bearer ${token}`

@@ -152,7 +152,7 @@ if (!user || user.role !== 'admin') {
 
 async function loadUsers() {
     try {
-        const res = await fetch("http://localhost:5000/api/admin/users", {
+        const res = await fetch(window.API_BASE_URL + "/api/admin/users", {
             headers: { "Authorization": `Bearer ${token}` }
         });
         const users = await res.json();
@@ -188,7 +188,7 @@ document.getElementById("createUserForm").addEventListener("submit", async funct
     const role = e.target.role.value;
 
     try {
-        const res = await fetch("http://localhost:5000/api/admin/users", {
+        const res = await fetch(window.API_BASE_URL + "/api/admin/users", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -213,7 +213,7 @@ document.getElementById("createUserForm").addEventListener("submit", async funct
 async function deleteUser(userId) {
     if (!confirm("Are you sure you want to delete this user?")) return;
     try {
-        const res = await fetch(`http://localhost:5000/api/admin/users/${userId}`, {
+        const res = await fetch(`${window.API_BASE_URL}/api/admin/users/${userId}`, {
             method: "DELETE",
             headers: {
                 "Authorization": `Bearer ${token}`

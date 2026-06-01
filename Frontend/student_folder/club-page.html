@@ -92,7 +92,7 @@ const images = {
 
 async function loadClubs() {
     try {
-        const res = await fetch("http://localhost:5000/api/clubs");
+        const res = await fetch(window.API_BASE_URL + "/api/clubs");
         const clubs = await res.json();
         const container = document.getElementById("clubsContainer");
         container.innerHTML = "";

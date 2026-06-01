@@ -196,7 +196,7 @@ if (!user || (user.role !== 'club_admin' && user.role !== 'admin')) {
 
 async function loadPendingRequests() {
     try {
-        const res = await fetch("http://localhost:5000/api/club-admin/requests", {
+        const res = await fetch(window.API_BASE_URL + "/api/club-admin/requests", {
             headers: { "Authorization": `Bearer ${token}` }
         });
         const requests = await res.json();
@@ -234,7 +234,7 @@ async function loadPendingRequests() {
 async function handleRequest(requestId, status) {
     if (!confirm(`Are you sure you want to set request as ${status}?`)) return;
     try {
-        const res = await fetch(`http://localhost:5000/api/club-admin/requests/${requestId}`, {
+        const res = await fetch(`${window.API_BASE_URL}/api/club-admin/requests/${requestId}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
@@ -253,7 +253,7 @@ async function handleRequest(requestId, status) {
 async function loadDashboard() {
     try {
         // 1. Get Club Info
-        const clubRes = await fetch("http://localhost:5000/api/my-club", {
+        const clubRes = await fetch(window.API_BASE_URL + "/api/my-club", {
             headers: { "Authorization": `Bearer ${token}` }
         });
         const club = await clubRes.json();
@@ -263,7 +263,7 @@ async function loadDashboard() {
             loadPendingRequests();
 
             // 2. Get Events for this club
-            const eventsRes = await fetch(`http://localhost:5000/api/clubs/${club.id}/events`, {
+            const eventsRes = await fetch(`${window.API_BASE_URL}/api/clubs/${club.id}/events`, {
                 headers: { "Authorization": `Bearer ${token}` }
             });
             const events = await eventsRes.json();
@@ -297,7 +297,7 @@ async function loadDashboard() {
                 }
 
                 // 3. Get Registrations for each event
-                const regRes = await fetch(`http://localhost:5000/api/events/${event.id}/registrations`, {
+                const regRes = await fetch(`${window.API_BASE_URL}/api/events/${event.id}/registrations`, {
                     headers: { "Authorization": `Bearer ${token}` }
                 });
                 const registrations = await regRes.json();

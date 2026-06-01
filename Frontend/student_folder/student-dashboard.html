@@ -214,7 +214,7 @@ const token = localStorage.getItem("token");
 
 async function fetchRegisteredEvents() {
     try {
-        const res = await fetch("http://localhost:5000/api/users/me/events", {
+        const res = await fetch(window.API_BASE_URL + "/api/users/me/events", {
             headers: { "Authorization": `Bearer ${token}` }
         });
         const data = await res.json();
@@ -228,7 +228,7 @@ async function loadEvents() {
     try {
         await fetchRegisteredEvents();
 
-        const res = await fetch("http://localhost:5000/api/events");
+        const res = await fetch(window.API_BASE_URL + "/api/events");
         const events = await res.json();
 
         const liveContainer = document.getElementById("liveEvents");
@@ -276,7 +276,7 @@ async function loadEvents() {
 
                 const card = `
                 <div class="event-card">
-                    <img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d">
+                    <img src="${event.image_url || 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d'}">
                     <div class="card-content">
 
                         ${displayStatus === "live" ? `
@@ -337,7 +337,7 @@ document.getElementById("joinClubForm").addEventListener("submit", async functio
     const reason = document.getElementById("joinReason").value;
 
     try {
-        const res = await fetch(`http://localhost:5000/api/clubs/${activeClubIdForJoin}/join`, {
+        const res = await fetch(`${window.API_BASE_URL}/api/clubs/${activeClubIdForJoin}/join`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -360,7 +360,7 @@ document.getElementById("joinClubForm").addEventListener("submit", async functio
 
 async function registerEvent(eventId, clubId) {
     try {
-        const res = await fetch("http://localhost:5000/api/registrations", {
+        const res = await fetch(window.API_BASE_URL + "/api/registrations", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -391,7 +391,7 @@ async function registerEvent(eventId, clubId) {
 async function cancelRegistration(eventId) {
     if (!confirm("Are you sure you want to cancel?")) return;
     try {
-        const res = await fetch(`http://localhost:5000/api/registrations/${eventId}`, {
+        const res = await fetch(`${window.API_BASE_URL}/api/registrations/${eventId}`, {
             method: "DELETE",
             headers: { "Authorization": `Bearer ${token}` }
         });
